@@ -1,0 +1,14 @@
+{
+  "autoload": {
+    "psr-4": { "DBFaker\\": "src/" }
+  },
+  "require": {
+    "fzaninotto/faker": "^1.6",
+    "doctrine/dbal": "^2.5",
+    "symfony/console": "^3.3",
+    "psr/log": "^1.0",
+    "mouf/utils.log.psr.errorlog_logger": "^2.0"
+  },
+  "minimum-stability" : "dev",
+  "prefer-stable": true
+}
