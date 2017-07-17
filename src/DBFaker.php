@@ -69,7 +69,7 @@ class DBFaker
                /    \
               |      |
               \      /
-                    /   TODO lots of packages have the same name, maybe find another one ?
+                    /
                    /    TODO : how do I implement progressbar with internal logger ?
                   |
 
@@ -274,9 +274,8 @@ class DBFaker
     }
 
     /**
-     * Sets the number of lignes that should be generated for each table
-     * Associative array - Key is the name of the table, and value the number of lines to the faked
-     * @param array[string, int] $fakeTableRowNumbers
+     * Sets the number of lines that should be generated for each table
+     * @param int[] $fakeTableRowNumbers : associative array - Key is the name of the table, and value the number of lines to the faked
      */
     public function setFakeTableRowNumbers(array $fakeTableRowNumbers) : void
     {
@@ -285,7 +284,7 @@ class DBFaker
 
     /**
      * Feed File path. If set, this file will store the fake data to be generated.
-     * This is usefull when you want to share the same fake data
+     * This is useful when you want to share the same fake data
      * @param string $feedFileName
      */
     public function setFeedFileName(string $feedFileName)

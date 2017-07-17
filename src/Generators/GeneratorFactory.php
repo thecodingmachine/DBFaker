@@ -60,7 +60,7 @@ class GeneratorFactory
      * @return FakeDataGeneratorInterface
      * @throws \Exception
      */
-    public function getGenerator(Table $table, Column $column)
+    public function getGenerator(Table $table, Column $column) : FakeDataGeneratorInterface
     {
         $generator = null;
         foreach ($this->dynamicGenerators as $dynamicGenerator){
