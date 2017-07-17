@@ -40,9 +40,13 @@ class PrimaryKeyRegistry
         $this->connection = $connection;
         $this->table = $table;
         $this->columns = $table->getPrimaryKey()->getColumns();
+        sort($this->columns);
     }
 
-    public function loadValuesFromTable()
+    /**
+     * Loads all PK values fro ma table and stores them
+     */
+    public function loadValuesFromTable() : PrimaryKeyRegistry
     {
         $this->values = [];
         $colNames = implode(",", $this->columns);
@@ -57,21 +61,35 @@ class PrimaryKeyRegistry
         return $this;
     }
 
-    public function addValue($value, $columnName = null)
+    /**
+     * Adds a PK value to the store
+     * @param int[] $value
+     * @param string|null $columnName
+     * @throws PrimaryKeyColumnMismatchException
+     */
+    public function addValue(array $value) : void
     {
-        if (count($this->columns) > 1 && $columnName === null){
-            throw new \Exception("Trying to add PK value on composite PK without specifying column name in table '". $this->table->getName() ."'");
-        }else if ($columnName === null){
-            $columnName = $this->columns[0];
+        $keys = array_keys($value);
+        sort($keys);
+        if ($this->columns == $keys){
+            throw new PrimaryKeyColumnMismatchException("PrimaryKeys do not match between PKStore and addValue");
         }
-        $this->values[] = [$columnName => $value];
+        $this->values[] = $value;
     }
 
-    public function getRandomValue(){
+    /**
+     * @return mixed[]
+     */
+    public function getRandomValue() : array
+    {
         return $this->values[random_int(0, count($this->values) -1)];
     }
 
-    public function getAllValues(){
+    /**
+     * @return mixed[][]
+     */
+    public function getAllValues() : array
+    {
         return $this->values;
     }
 

@@ -25,16 +25,21 @@ class ComplexObjectGenerator implements FakeDataGeneratorInterface
     /**
      * ComplexObjectGenerator constructor.
      * @param Generator $generator
+     * @param int|null $depth
+     * @param bool $toArray
      */
-    public function __construct(Generator $generator, $depth = null, $toArray = true)
+    public function __construct(Generator $generator, int $depth = null, bool $toArray = true)
     {
         $this->generator = $generator;
         $this->depth = $depth;
         $this->toArray = $toArray;
     }
 
-
-    public function getValue(Column $column)
+    /**
+     * @param Column $column
+     * @return mixed
+     */
+    public function __invoke(Column $column)
     {
         if ($this->depth === null){
             $this->depth = random_int(2, 5);
@@ -46,7 +51,11 @@ class ComplexObjectGenerator implements FakeDataGeneratorInterface
         return $object;
     }
 
-    private function generateRandomObject($depth)
+    /**
+     * @param int $depth
+     * @return mixed
+     */
+    private function generateRandomObject(int $depth) : mixed
     {
         $obj = new \stdClass();
         $nbProps = random_int(2, 5);
@@ -65,6 +74,9 @@ class ComplexObjectGenerator implements FakeDataGeneratorInterface
         return $obj;
     }
 
+    /**
+     * @return mixed
+     */
     private function randomValue()
     {
         $generators = [
@@ -79,9 +91,12 @@ class ComplexObjectGenerator implements FakeDataGeneratorInterface
         return $generators[array_rand($generators)];
     }
 
-    private function randomPropName()
+    /**
+     * @return string
+     */
+    private function randomPropName() : string
     {
-        return $this->generator->userName;
+        return str_replace(".", "", $this->generator->userName);
     }
 
 

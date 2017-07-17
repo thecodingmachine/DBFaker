@@ -9,6 +9,7 @@
 namespace DBFaker\Helpers;
 
 
+use DBFaker\Generators\UnsupportedDataTypeException;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Types\Type;
 
@@ -41,7 +42,7 @@ class NumericColumnLimitHelper
     public function __construct(Column $column)
     {
         if (array_search($column->getType()->getName(), self::$handledNumberTypes) === false){
-            throw new \Exception("Unsupported column type : " .
+            throw new UnsupportedDataTypeException("Unsupported column type : " .
                 $column->getType()->getName() . "only " .
                 implode("', '", self::$handledNumberTypes) ." types are supported."
             );
@@ -51,9 +52,10 @@ class NumericColumnLimitHelper
 
     /**
      * returns the min numeric value for the column
-     * return mixed
+     * @return mixed
      */
-    public function getMinNumericValue(){
+    public function getMinNumericValue()
+    {
         $precisionValue = $this->getAbsValueByLengthPrecision($this->column);
         switch ($this->column->getType()->getName()){
             case Type::BIGINT:
@@ -76,12 +78,10 @@ class NumericColumnLimitHelper
 
     /**
      * returns the max numeric value for the column
-     * return mixed
+     * @return mixed
      */
-    public function getMaxNumericValue(){
-        if (array_search($this->column->getType()->getName(), self::$handledNumberTypes) === false){
-            throw new \Exception("unsupported type for min value : " . $this->column->getType()->getName());
-        }
+    public function getMaxNumericValue()
+    {
         $precisionValue = $this->getAbsValueByLengthPrecision($this->column);
         switch ($this->column->getType()->getName()){
             case Type::BIGINT:
@@ -102,6 +102,10 @@ class NumericColumnLimitHelper
         }
     }
 
+    /**
+     * @param Column $column
+     * @return mixed
+     */
     private function getAbsValueByLengthPrecision(Column $column)
     {
         switch ($column->getType()->getName()){
@@ -116,7 +120,11 @@ class NumericColumnLimitHelper
         }
     }
 
-    public function isIntergerType(){
+    /**
+     * @return bool : tells if the type has no decimal support
+     */
+    public function isIntegerType() : bool
+    {
         return in_array($this->column->getType()->getName(), [Type::DECIMAL, Type::FLOAT]) === false;
 
     }

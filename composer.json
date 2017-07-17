@@ -9,7 +9,8 @@
     "fzaninotto/faker": "^1.6",
     "doctrine/dbal": "^2.5",
     "symfony/console": "^3.3",
-    "psr/log": "^1.0"
+    "psr/log": "^1.0",
+    "php": ">=7.1"
   },
   "require-dev" : {
     "mouf/utils.log.psr.errorlog_logger": "^2.0",

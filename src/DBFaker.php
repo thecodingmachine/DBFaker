@@ -56,11 +56,6 @@ class DBFaker
     private $foreignKeyStore = [];
 
     /**
-     * @var string
-     */
-    private $feedFileName;
-
-    /**
      * @var int
      */
     private $nullProbability = 10;
@@ -90,7 +85,10 @@ class DBFaker
         $this->schemaManager = $connection->getSchemaManager();
     }
 
-    public function fakeDB()
+    /**
+     * Main function : does all the job
+     */
+    public function fakeDB() : void
     {
         set_time_limit(0);//Import may take a looooong time
         $this->generateFakeData();
@@ -99,30 +97,28 @@ class DBFaker
         $this->restoreForeignKeys();
     }
 
-
-    public function generateFakeData()
+    /**
+     * Generates the fake data for specified tables
+     */
+    public function generateFakeData() : void
     {
         $this->log->info("Step 1 : Generating data ...");
-        if ($this->feedFileName !== null && file_exists($this->feedFileName) && file_get_contents($this->feedFileName)){
-            $this->log->info("Step 1 : Feeding data from file ...");
-            $this->data = unserialize(file_get_contents($this->feedFile));
-        }else{
-            $this->log->info("Step 1 : Generating data ...");
-            foreach ($this->fakeTableRowNumbers as $tableName => $lines) {
-                $table = $this->schemaManager->listTableDetails($tableName);
-                $this->data[$table->getName()] = $this->getFakeDataForTable($table);
-            }
-            if ($this->feedFileName !== null){
-                file_put_contents($this->feedFileName, serialize($this->data));
-            }
+        foreach ($this->fakeTableRowNumbers as $tableName => $nbLines) {
+            $table = $this->schemaManager->listTableDetails($tableName);
+            $this->data[$table->getName()] = $this->getFakeDataForTable($table, $nbLines);
         }
     }
 
-    private function getFakeDataForTable(Table $table) : array
+    /**
+     * @param Table $table the table for which fakse data will be generated
+     * @param int $nbLines : the number of lines to generate
+     * @return mixed[]
+     */
+    private function getFakeDataForTable(Table $table, int $nbLines) : array
     {
         $data = [];
-        for ($i = 0; $i < $this->fakeTableRowNumbers[$table->getName()]; $i++) {
-            $this->log->info("Step 1 : table " . $table->getName() . "$i / " . $this->fakeTableRowNumbers[$table->getName()]);
+        for ($i = 0; $i < $nbLines; $i++) {
+            $this->log->info("Step 1 : table " . $table->getName() . "$i / " . $nbLines);
             $row = [];
             foreach ($table->getColumns() as $column) {
                 //Check column isn't a PK : PK will be set automatically (NO UUID support)
@@ -134,7 +130,7 @@ class DBFaker
                     if (!$column->getNotnull() && $this->nullProbabilityOccured()){
                         $value = null;
                     }else{
-                        $value = $this->generatorFactory->getGenerator($table, $column)->getValue($column);
+                        $value = $this->generatorFactory->getGenerator($table, $column)($column);
                     }
                 }
                 $row[$column->getName()] = $value;
@@ -185,9 +181,9 @@ class DBFaker
             $table = $this->schemaManager->listTableDetails($tableName);
 
             //initiate column types for insert
+            $types = [];
             $first = reset($rows);
             if ($first){
-                $types = [];
                 foreach ($first as $columnName => $value){
                     /** @var $column Column */
                     $column = $table->getColumn($columnName);
@@ -206,7 +202,8 @@ class DBFaker
                 $this->connection->insert($table->getName(), $dbRow, $types);
             }
             //add the new ID to the PKRegistry
-            $this->getPkRegistry($table)->addValue($this->connection->lastInsertId());
+            $pkColumnName = $table->getPrimaryKeyColumns()[0];
+            $this->getPkRegistry($table)->addValue([$pkColumnName => $this->connection->lastInsertId()]);
         }
 
         //2 - loop again on table to set FKs now that all PK have been loaded
@@ -268,7 +265,10 @@ class DBFaker
         return $this->primaryKeyRegistries[$table->getName()];
     }
 
-    private function nullProbabilityOccured()
+    /**
+     * @return bool : if null value should be generated
+     */
+    private function nullProbabilityOccured() : bool
     {
         return random_int(0, 100) < $this->nullProbability;
     }
@@ -283,20 +283,10 @@ class DBFaker
     }
 
     /**
-     * Feed File path. If set, this file will store the fake data to be generated.
-     * This is useful when you want to share the same fake data
-     * @param string $feedFileName
-     */
-    public function setFeedFileName(string $feedFileName)
-    {
-        $this->feedFileName = $feedFileName;
-    }
-
-    /**
      * Sets the null probability : chance to generate a null value for nullable columns (between 0 and 100, default is 10)
      * @param int $nullProbability
      */
-    public function setNullProbability(int $nullProbability)
+    public function setNullProbability(int $nullProbability) : void
     {
         $this->nullProbability = $nullProbability;
     }

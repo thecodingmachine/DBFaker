@@ -63,13 +63,13 @@ class GeneratorFactory
     public function getGenerator(Table $table, Column $column) : FakeDataGeneratorInterface
     {
         $generator = null;
+        $identifier = $table->getName() . "." . $column->getName();
         foreach ($this->dynamicGenerators as $dynamicGenerator){
             if ($dynamicGenerator["conditionCallback"]($column)){
                 $generator = $dynamicGenerator["generator"];
             }
         }
         if (!$generator){
-            $identifier = $table->getName() . "." . $column->getName();
             if (isset($this->columnGenerators[$identifier])) {
                 $generator = $this->columnGenerators[$identifier];
             }else{
@@ -77,7 +77,7 @@ class GeneratorFactory
             }
         }
         if ($generator === null){
-            throw new \Exception("No colum, type nore default generator found for column '".$identifier."' of type '".$column->getType()->getName()."', you must provide it !");
+            throw new \RuntimeException("No colum, type nor default generator found for column '".$identifier."' of type '".$column->getType()->getName()."', you must provide it !");
         }
         return $generator;
     }
@@ -86,7 +86,7 @@ class GeneratorFactory
      * @param Column $column
      * @return FakeDataGeneratorInterface
      */
-    private function getDefaultGenerator(Type $type)
+    private function getDefaultGenerator(Type $type) : FakeDataGeneratorInterface
     {
         $faker = $this->faker;
         $type = $type->getName();
@@ -126,7 +126,7 @@ class GeneratorFactory
                     $generator = new ComplexObjectGenerator($faker);
                     break;
                 case Type::GUID :
-                    $generator = new SimpleGenerator(function(Column $column) use ($faker) {
+                    $generator = new SimpleGenerator(function() {
                         $chars = "0123456789abcdef";
                         $groups = [8 ,4, 4, 4, 12];
                         $guid = [];
@@ -152,7 +152,7 @@ class GeneratorFactory
                     $generator = null;
                     break;
                 default :
-                    throw new \Exception("Unsupported data type : " . $type);
+                    throw new UnsupportedDataTypeException("Data type : '" . $type . "' is not supported");
             }
             $this->defaultGenerators[$type] = $generator;
         }
@@ -162,31 +162,24 @@ class GeneratorFactory
     /**
      * @param string $table the name of the table that contains the column you are looking for
      * @param string $column the name of the column which's default generator should be overriden
-     * @param  callable|FakeDataGeneratorInterface $generator : If callback, then it takes 1 parameter : the \Doctrine\DBAL\Schema\Column
+     * @param  callable $generator : "real" callback with Column in argument or FakeDataGeneratorInterface
      */
-    public function setGeneratorForColumn(string $table, string $column, $generator)
+    public function setGeneratorForColumn(string $table, string $column, callable $generator) : void
     {
-        if (is_callable($generator)){
-            $generator = new SimpleGenerator($generator);
-        }
         if (!$generator instanceof FakeDataGeneratorInterface){
-            throw new \Exception("function 'setGeneratorForColumn' only takes callable or a FakeDataGeneratorInterface");
+            $generator = new SimpleGenerator($generator);
         }
         $this->columnGenerators[$table . "." . $column] = $generator;
     }
 
     /**
-     * @param string $table the name of the table that contains the column you are looking for
-     * @param string $column the name of the column which's default generator should be overriden
-     * @param  callable|FakeDataGeneratorInterface $generator : If callback, then it takes 1 parameter : the \Doctrine\DBAL\Schema\Column
+     * @param  callable $conditionCallback : callback that returns a boolean (true if generator override should happend) takes the Column as input
+     * @param  callable $generator : "real" callback with Column in argument or FakeDataGeneratorInterface
      */
-    public function setGenerator(callable $conditionCallback, $generator)
+    public function setGenerator(callable $conditionCallback, callable $generator) : void
     {
-        if (is_callable($generator)){
-            $generator = new SimpleGenerator($generator);
-        }
         if (!$generator instanceof FakeDataGeneratorInterface){
-            throw new \Exception("function 'setGeneratorForColumn' only takes callable or a FakeDataGeneratorInterface");
+            $generator = new SimpleGenerator($generator);
         }
         $this->dynamicGenerators[] = [
             "conditionCallback" => $conditionCallback,
@@ -197,7 +190,7 @@ class GeneratorFactory
     /**
      * @param array $generators
      */
-    public function setDefaultGenerator(Type $type, FakeDataGeneratorInterface $generator)
+    public function setDefaultGenerator(Type $type, FakeDataGeneratorInterface $generator) : void
     {
         $this->defaultGenerators[$type] = $generator;
     }

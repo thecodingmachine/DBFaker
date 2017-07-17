@@ -8,6 +8,6 @@ interface FakeDataGeneratorInterface
     /**
      * @return mixed
      */
-    public function getValue(Column $column);
+    public function __invoke(Column $column);
 
 }

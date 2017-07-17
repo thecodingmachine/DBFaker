@@ -26,10 +26,12 @@ class NumericGenerator implements FakeDataGeneratorInterface
         $this->faker = $faker;
     }
 
-    public function getValue(Column $column)
+    public function __invoke(Column $column)
     {
         $inspector = new NumericColumnLimitHelper($column);
-        return $this->faker->randomFloat(10, $inspector->getMinNumericValue(), $inspector->getMaxNumericValue());
+        $min = $inspector->getMinNumericValue();
+        $max = $inspector->getMaxNumericValue();
+        return $inspector->isIntegerType() ? random_int($min, $max) : $this->faker->randomFloat(10, $min, $max);
     }
 
 
