@@ -11,7 +11,7 @@ env:
   - TASK_CS=1
   - TASK_SCA=0
   matrix:
-  - COMPOSER_FLAGS="--prefer-lowest"
+#  - COMPOSER_FLAGS="--prefer-lowest"
   - COMPOSER_FLAGS=""
 cache:
   directories:
