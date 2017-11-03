@@ -55,7 +55,7 @@ class ComplexObjectGenerator implements FakeDataGeneratorInterface
      * @param int $depth
      * @return mixed
      */
-    private function generateRandomObject(int $depth) : mixed
+    private function generateRandomObject(int $depth) : \stdClass
     {
         $obj = new \stdClass();
         $nbProps = random_int(2, 5);

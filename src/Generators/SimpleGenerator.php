@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: kevin
- * Date: 12/06/17
- * Time: 07:21
- */
-
 namespace DBFaker\Generators;
 
 

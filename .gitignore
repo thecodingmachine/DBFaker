@@ -1,4 +1,4 @@
 .idea
 vendor/
-*.phpunit.xml
+phpunit.xml
 composer.lock

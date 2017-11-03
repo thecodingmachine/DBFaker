@@ -2,6 +2,7 @@
 namespace DBFaker;
 
 use DBFaker\Generators\GeneratorFactory;
+use DBFaker\Generators\GeneratorFinder;
 use DBFaker\Helpers\PrimaryKeyRegistry;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
@@ -26,9 +27,9 @@ class DBFaker
     private $schemaManager;
 
     /**
-     * @var GeneratorFactory
+     * @var GeneratorFinder
      */
-    private $generatorFactory;
+    private $generatorFinder;
 
     /**
      * @var LoggerInterface
@@ -66,21 +67,22 @@ class DBFaker
               \      /
                     /
                    /    TODO : how do I implement progressbar with internal logger ?
-                  |
-
+                  |     TODO: Handle DB extend
+                        TODO: Handle unique indexes
                   o
     */
 
     /**
      * DBFaker constructor.
      * @param Connection $connection
-     * @param GeneratorFactory $generatorFactory
-     * @param SchemaAnalyzer $schemaAnalyzer
+     * @param GeneratorFinder $generatorFinder
+     * @param LoggerInterface $log
+     * @internal param SchemaAnalyzer $schemaAnalyzer
      */
-    public function __construct(Connection $connection, GeneratorFactory $generatorFactory = null, LoggerInterface $log = null)
+    public function __construct(Connection $connection, GeneratorFinder $generatorFinder, LoggerInterface $log = null)
     {
         $this->connection = $connection;
-        $this->generatorFactory = $generatorFactory ?? new GeneratorFactory();
+        $this->generatorFinder = $generatorFinder;
         $this->log = $log ?? new ErrorLogLogger();
         $this->schemaManager = $connection->getSchemaManager();
     }
@@ -123,14 +125,18 @@ class DBFaker
             foreach ($table->getColumns() as $column) {
                 //Check column isn't a PK : PK will be set automatically (NO UUID support)
                 if (array_search($column->getName(), $table->getPrimaryKeyColumns()) !== false) {
-                    $value = null;
+                    if ($column->getAutoincrement()){
+                        $value = null;
+                    }else{
+                        return $this->getUniqueValue($table, $column);
+                    }
                 }
                 //Other data will be Faked depending of column's type and attributes
                 else {
                     if (!$column->getNotnull() && $this->nullProbabilityOccured()){
                         $value = null;
                     }else{
-                        $value = $this->generatorFactory->getGenerator($table, $column)($column);
+                        $value = $this->generatorFinder->findGenerator($table, $column)($column);
                     }
                 }
                 $row[$column->getName()] = $value;
@@ -289,6 +295,11 @@ class DBFaker
     public function setNullProbability(int $nullProbability) : void
     {
         $this->nullProbability = $nullProbability;
+    }
+
+    private function getUniqueValue($table, $column)
+    {
+
     }
 
 }
