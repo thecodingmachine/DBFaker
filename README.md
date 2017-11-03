@@ -1,3 +1,11 @@
+[![Latest Stable Version](https://poser.pugx.org/thecodingmachine/DBFaker/v/stable)](https://packagist.org/packages/thecodingmachine/DBFaker)
+[![Total Downloads](https://poser.pugx.org/thecodingmachine/DBFaker/downloads)](https://packagist.org/packages/thecodingmachine/DBFaker)
+[![Latest Unstable Version](https://poser.pugx.org/thecodingmachine/DBFaker/v/unstable)](https://packagist.org/packages/thecodingmachine/DBFaker)
+[![License](https://poser.pugx.org/thecodingmachine/DBFaker/license)](https://packagist.org/packages/thecodingmachine/DBFaker)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/thecodingmachine/DBFaker/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/thecodingmachine/DBFaker/?branch=master)
+[![Build Status](https://travis-ci.org/thecodingmachine/DBFaker.svg?branch=master)](https://travis-ci.org/thecodingmachine/DBFaker)
+[![Coverage Status](https://coveralls.io/repos/thecodingmachine/DBFaker/badge.svg?branch=master&service=github)](https://coveralls.io/github/thecodingmachine/DBFaker?branch=master)
+
 # DBFakeFiller
 An easy to use tool to popuplate your database with fake data. Based on [doctrine/dbal](https://github.com/doctrine/dbal) so it should me cross plateforme. Fake data are generated using [fzaninotto/faker](https://github.com/fzaninotto/Faker).
 

@@ -17,8 +17,8 @@
     "phpunit/phpunit": "^6.2",
     "satooshi/php-coveralls": "^1",
     "phpstan/phpstan": "^0.7",
-    "thecodingmachine/phpstan-strict-rules": "^0.7",
-    "thecodingmachine/dbal-fluid-schema-builder": "^1.2"
+    "thecodingmachine/dbal-fluid-schema-builder": "^1.2",
+    "thecodingmachine/phpstan-strict-rules": "^0.7.3"
   },
   "scripts": {
     "phpstan": "phpstan analyse src -c phpstan.neon --level=4 --no-progress -vvv"
