@@ -1,10 +1,12 @@
 <?php
 namespace DBFaker\Generators;
 
+use DBFaker\DBFaker;
 use Doctrine\DBAL\Schema\Column;
+use Faker\Factory;
 use Faker\Generator;
 
-class ComplexObjectGenerator implements FakeDataGeneratorInterface
+class ComplexObjectGenerator extends UniqueAbleGenerator
 {
 
     /**
@@ -28,27 +30,17 @@ class ComplexObjectGenerator implements FakeDataGeneratorInterface
      * @param int|null $depth
      * @param bool $toArray
      */
-    public function __construct(Generator $generator, int $depth = null, bool $toArray = true)
+    public function __construct(int $depth = null, bool $toArray = true, $generateUniqueValues = false)
     {
-        $this->generator = $generator;
-        $this->depth = $depth;
+        parent::__construct($generateUniqueValues);
+        $this->generator = Factory::create();
+        $this->depth = $depth ?? random_int(2, 5);
         $this->toArray = $toArray;
     }
 
-    /**
-     * @param Column $column
-     * @return mixed
-     */
-    public function __invoke(Column $column)
+    protected function generateRandomValue()
     {
-        if ($this->depth === null){
-            $this->depth = random_int(2, 5);
-        }
-        $object = $this->generateRandomObject($this->depth);
-        if ($this->toArray){
-            $object = json_decode(json_encode($object, JSON_OBJECT_AS_ARRAY), true);
-        }
-        return $object;
+        return $this->generateRandomObject($this->depth);
     }
 
     /**
@@ -70,6 +62,10 @@ class ComplexObjectGenerator implements FakeDataGeneratorInterface
                 $value = $this->randomValue();
             }
             $obj->$propName = $value;
+        }
+
+        if ($this->toArray){
+            $obj = json_decode(json_encode($obj, JSON_OBJECT_AS_ARRAY), true);
         }
         return $obj;
     }
@@ -98,6 +94,5 @@ class ComplexObjectGenerator implements FakeDataGeneratorInterface
     {
         return str_replace(".", "", $this->generator->userName);
     }
-
 
 }

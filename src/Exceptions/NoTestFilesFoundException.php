@@ -1,5 +1,5 @@
 <?php
-namespace DBFaker\Generators;
+namespace DBFaker\Exceptions;
 
 
 class NoTestFilesFoundException extends \LogicException

@@ -1,5 +1,5 @@
 <?php
-namespace DBFaker\Generators;
+namespace DBFaker\Exceptions;
 
 
 class UnsupportedDataTypeException extends \LogicException

@@ -30,143 +30,52 @@ class GeneratorFinderBuilder
      * @return GeneratorFinderBuilder
      */
     public static function buildDefaultFinderBuilder(){
-        $faker = Factory::create();
         $builder = new GeneratorFinderBuilder([]);
 
-        return $builder
-            ->addGenerator(
-                new CheckTypeCondition(Type::TARRAY),
-                new ComplexObjectGenerator($faker)
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::SIMPLE_ARRAY),
-                new ComplexObjectGenerator($faker, 0)
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::JSON_ARRAY),
-                new ComplexObjectGenerator($faker, 1)
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::JSON),
-                new ComplexObjectGenerator($faker, 1)
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::BOOLEAN),
-                new SimpleGenerator(function(Column $column) use ($faker) {
-                    return $faker->boolean;
-                })
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::DATETIME),
-                new SimpleGenerator(function(Column $column) use ($faker) {
-                    return $faker->dateTime;
-                })
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::DATETIMETZ),
-                new SimpleGenerator(function(Column $column) use ($faker) {
-                    return $faker->dateTime;
-                })
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::DATE),
-                new SimpleGenerator(function(Column $column) use ($faker) {
-                    return $faker->dateTime;
-                })
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::TIME),
-                new SimpleGenerator(function(Column $column) use ($faker) {
-                    return $faker->dateTime;
-                })
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::DATETIME_IMMUTABLE),
-                new SimpleGenerator(function(Column $column) use ($faker) {
-                    return \DateTimeImmutable::createFromMutable($faker->dateTime);
-                })
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::DATE_IMMUTABLE),
-                new SimpleGenerator(function(Column $column) use ($faker) {
-                    return \DateTimeImmutable::createFromMutable($faker->dateTime);
-                })
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::DATETIMETZ_IMMUTABLE),
-                new SimpleGenerator(function(Column $column) use ($faker) {
-                    return \DateTimeImmutable::createFromMutable($faker->dateTime);
-                })
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::TIME_IMMUTABLE),
-                new SimpleGenerator(function(Column $column) use ($faker) {
-                    return \DateTimeImmutable::createFromMutable($faker->dateTime);
-                })
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::DATEINTERVAL),
-                new SimpleGenerator(function(Column $column) use ($faker) {
-                    return $faker->dateTime->diff($faker->dateTime);
-                })
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::BIGINT),
-                new NumericGenerator($faker)
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::INTEGER),
-                new NumericGenerator($faker)
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::SMALLINT),
-                new NumericGenerator($faker)
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::FLOAT),
-                new NumericGenerator($faker)
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::DECIMAL),
-                new NumericGenerator($faker)
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::OBJECT),
-                new ComplexObjectGenerator($faker)
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::STRING),
-                new SimpleGenerator(function(Column $column) use ($faker) {
-                    $maxLength = $column->getLength() > 5 ? max($column->getLength(), 300) : $column->getLength();
-                    return $column->getLength() > 5 ? $faker->text($maxLength) : substr($faker->text(5), 0, $column->getLength() - 1);
-                })
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::TEXT),
-                new SimpleGenerator(function(Column $column) use ($faker) {
-                    $maxLength = $column->getLength() > 5 ? max($column->getLength(), 300) : $column->getLength();
-                    return $column->getLength() > 5 ? $faker->text($maxLength) : substr($faker->text(5), 0, $column->getLength() - 1);
-                })
-            )
-            ->addGenerator(
-                new CheckTypeCondition(Type::GUID),
-                new SimpleGenerator(function() {
-                    $chars = "0123456789abcdef";
-                    $groups = [8 ,4, 4, 4, 12];
-                    $guid = [];
-                    foreach ($groups as $length){
-                        $sub = "";
-                        for ($i = 0; $i < $length; $i++){
-                            $sub .= $chars[random_int(0, count($chars) - 1)];
-                        }
-                        $guid[] = $sub;
-                    }
-                    return implode("-", $guid);
-                })
+        $typeFactories = [
+            Type::TARRAY => new ComplexObjectGeneratorFactory(),
+            Type::SIMPLE_ARRAY => new ComplexObjectGeneratorFactory(0),
+            Type::JSON_ARRAY => new ComplexObjectGeneratorFactory(2),
+            Type::JSON => new ComplexObjectGeneratorFactory(2),
+            Type::OBJECT => new ComplexObjectGeneratorFactory(),
+
+            Type::BOOLEAN => new SimpleGeneratorFactory("boolean"),
+
+            Type::DATETIME => new SimpleGeneratorFactory("dateTime"),
+            Type::DATETIMETZ => new SimpleGeneratorFactory("dateTime"),
+            Type::DATE => new SimpleGeneratorFactory("dateTime"),
+            Type::TIME => new SimpleGeneratorFactory("dateTime"),
+
+            Type::DATETIME_IMMUTABLE => new DateTimeImmutableGeneratorFactory(),
+            Type::DATE_IMMUTABLE => new DateTimeImmutableGeneratorFactory(),
+            Type::DATETIMETZ_IMMUTABLE => new DateTimeImmutableGeneratorFactory(),
+            Type::TIME_IMMUTABLE => new DateTimeImmutableGeneratorFactory(),
+            Type::DATEINTERVAL => new DateIntervalGeneratorFactory(),
+
+
+            Type::BIGINT => new NumericGeneratorFactory(),
+            Type::INTEGER => new NumericGeneratorFactory(),
+            Type::SMALLINT => new NumericGeneratorFactory(),
+            Type::FLOAT => new NumericGeneratorFactory(),
+            Type::DECIMAL => new NumericGeneratorFactory(),
+
+            Type::STRING => new TextGeneratorFactory(),
+            Type::TEXT => new TextGeneratorFactory(),
+
+            Type::GUID => new SimpleGeneratorFactory("uuid")
+        ];
+
+        foreach ($typeFactories as $type => $factory) {
+            $builder->addGenerator(
+                new CheckTypeCondition($type),
+                $factory
             );
+        }
+
+        return $builder;
     }
 
-    public function addGenerator(ConditionInterface $condition, FakeDataGeneratorInterface $generator) : GeneratorFinderBuilder
+    public function addGenerator(ConditionInterface $condition, FakeDataGeneratorFactoryInterface $generator) : GeneratorFinderBuilder
     {
         array_unshift($this->generators, [$condition, $generator]);
         return $this;

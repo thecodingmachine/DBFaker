@@ -4,6 +4,7 @@ namespace DBFaker;
 use DBFaker\Generators\GeneratorFactory;
 use DBFaker\Generators\GeneratorFinder;
 use DBFaker\Helpers\PrimaryKeyRegistry;
+use DBFaker\Helpers\SchemaHelper;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
@@ -15,6 +16,7 @@ use Psr\Log\NullLogger;
 
 class DBFaker
 {
+    const MAX_ITERATIONS_FOR_UNIQUE_VALUE = 1000;
 
     /**
      * @var Connection
@@ -57,11 +59,21 @@ class DBFaker
     private $foreignKeyStore = [];
 
     /**
+     * @var Index[][]
+     */
+    private $multipleUniqueContraintStore = [];
+
+    /**
      * @var int
      */
     private $nullProbability = 10;
 
-    /*           ___
+    /**
+     * @var SchemaHelper
+     */
+    private $schemaHelper;
+
+    /*           __
                /    \
               |      |
               \      /
@@ -85,6 +97,7 @@ class DBFaker
         $this->generatorFinder = $generatorFinder;
         $this->log = $log ?? new ErrorLogLogger();
         $this->schemaManager = $connection->getSchemaManager();
+        $this->schemaHelper = new SchemaHelper($this->schemaManager);
     }
 
     /**
@@ -92,11 +105,13 @@ class DBFaker
      */
     public function fakeDB() : void
     {
-        set_time_limit(0);//Import may take a looooong time
+        set_time_limit(0);//Import may take a looooooong time :)
         $this->generateFakeData();
         $this->dropForeignKeys();
+        $this->dropMultipleUniqueContraints();
         $this->insertFakeData();
         $this->restoreForeignKeys();
+        $this->restoreMultipleUniqueContraints();
     }
 
     /**
@@ -123,20 +138,20 @@ class DBFaker
             $this->log->info("Step 1 : table " . $table->getName() . "$i / " . $nbLines);
             $row = [];
             foreach ($table->getColumns() as $column) {
-                //Check column isn't a PK : PK will be set automatically (NO UUID support)
-                if (array_search($column->getName(), $table->getPrimaryKeyColumns()) !== false) {
-                    if ($column->getAutoincrement()){
-                        $value = null;
-                    }else{
-                        return $this->getUniqueValue($table, $column);
-                    }
+                //IF column is a PK and Autoincrement then values will be set to null, let the database generate them
+                if ($this->schemaHelper->isPrimaryKeyColumn($table, $column) && $column->getAutoincrement()) {
+                    $value = null;
                 }
-                //Other data will be Faked depending of column's type and attributes
+                //Other data will be Faked depending of column's type and attributes. FKs to, but their values wil be overridden.
                 else {
                     if (!$column->getNotnull() && $this->nullProbabilityOccured()){
                         $value = null;
                     }else{
-                        $value = $this->generatorFinder->findGenerator($table, $column)($column);
+                        $generator = $this->generatorFinder->findGenerator($table, $column);
+                        $value = $generator($column);
+                    }
+                    if ($this->schemaHelper->isPrimaryKeyColumn($table, $column)){
+                        $this->getPkRegistry($table)->addValue($column->getName(), $value);
                     }
                 }
                 $row[$column->getName()] = $value;
@@ -147,42 +162,30 @@ class DBFaker
     }
 
     /**
-     * Drop all foreign keys because it is too complicated to solve the table reference graph in order to generate data in the right order.
-     * FKs are stored to be recreated at the end
-     */
-    private function dropForeignKeys() : void
-    {
-        $this->foreignKeyStore = [];
-        $tables = $this->schemaManager->listTables();
-        foreach ($tables as $table){
-            foreach ($table->getForeignKeys() as $fk){
-                $this->foreignKeyStore[$table->getName()][] = $fk;
-                $this->schemaManager->dropForeignKey($fk, $table);
-            }
-        }
-    }
-
-    /**
-     * Restore the foreign keys based on the ForeignKeys store built when calling dropForeignKeys()
-     */
-    private function restoreForeignKeys() : void
-    {
-        foreach ($this->foreignKeyStore as $tableName => $fks){
-            foreach ($fks as $fk){
-                $this->schemaManager->createForeignKey($fk, $tableName);
-            }
-        }
-    }
-
-    /**
      * Inserts the data. This is done in 2 steps :
      *   - first insert data for all lines / columns. FKs will be assigned values that only match there type. This step allows to create PK values for second step.
      *   - second turn will update FKs to set random PK values from the previously generated lines.
      */
     private function insertFakeData() : void
     {
-        $plateform = $this->connection->getDatabasePlatform();
         //1 - First insert data with no FKs, and null PKs. This will generate primary keys
+        $this->insertWithoutFksAndUniqueIndexes();
+
+        //2 - loop on multiple unique index contraints (that may include FKs)
+        $handledColumns = $this->updateMulipleUniqueIndexedColumns();
+
+        //3 - loop again to set FKs now that all PK have been loaded
+        $this->updateRemainingForeignKeys($handledColumns);
+    }
+
+    /**
+     * Inserts base data :
+     *    - AutoIncrement PKs will be generated and stored
+     *    - ForeignKey and Multiple Unique Indexes are ignored, because we need self-generated PK values
+     */
+    private function insertWithoutFksAndUniqueIndexes()
+    {
+        $plateform = $this->connection->getDatabasePlatform();
         foreach ($this->data as $tableName => $rows){
             $table = $this->schemaManager->listTableDetails($tableName);
 
@@ -207,54 +210,11 @@ class DBFaker
                 }
                 $this->connection->insert($table->getName(), $dbRow, $types);
             }
-            //add the new ID to the PKRegistry
+            //if autoincrement, add the new ID to the PKRegistry
             $pkColumnName = $table->getPrimaryKeyColumns()[0];
-            $this->getPkRegistry($table)->addValue([$pkColumnName => $this->connection->lastInsertId()]);
-        }
-
-        //2 - loop again on table to set FKs now that all PK have been loaded
-        foreach ($this->foreignKeyStore as $tableName => $fks){
-            if (array_search($tableName, array_keys($this->fakeTableRowNumbers)) === false){
-                //only update tables where data has been inserted
-                continue;
-            }
-            $table = $this->schemaManager->listTableDetails($tableName);
-
-            /*
-             * Build an array of foreign keys, eg:
-             * [
-             *      "user_id" => ["table" => "user", "column" => "id"],
-             *      "country_id" => ["table" => "country", "column" => "id"]
-             * ]
-             *
-             * foreign tables' PKRegistries will provide final values for local FKs columns
-             */
-            $fkInfo = [];
-            foreach ($fks as $fk){
-                $localColums = $fk->getLocalColumns();
-                $foreignColumns = $fk->getForeignColumns();
-                $foreignTable = $this->schemaManager->listTableDetails($fk->getForeignTableName());
-                foreach ($localColums as $index => $localColumn){
-                    $foreignColumn = $foreignColumns[$index];
-                    $fkInfo[$localColumn] = [
-                        "table" => $foreignTable,
-                        "column" => $foreignColumn
-                    ];
-                }
-            }
-
-            //Get all the PKs in the table (ie all the lines to update), and update the FKs with random PK values
-            $pkValues = $this->getPkRegistry($table)->loadValuesFromTable()->getAllValues();
-            foreach ($pkValues as $pkValue){
-                $newValues = [];
-                foreach ($fkInfo as $localColumn => $foreignData){
-                    $foreignTable = $foreignData["table"];
-                    $foreignColumn = $foreignData["column"];
-                    $fkPkRegistry = $this->getPkRegistry($foreignTable);
-                    $randomPk = $fkPkRegistry->loadValuesFromTable()->getRandomValue();
-                    $newValues[$localColumn] = $randomPk[$foreignColumn];
-                }
-                $this->connection->update($tableName, $newValues, $pkValue);
+            $pkColumn = $table->getColumn($pkColumnName);
+            if ($this->schemaHelper->isPrimaryKeyColumn($table, $pkColumn)){
+                $this->getPkRegistry($table)->addValue([$pkColumnName => $this->connection->lastInsertId()]);
             }
         }
     }
@@ -297,9 +257,121 @@ class DBFaker
         $this->nullProbability = $nullProbability;
     }
 
-    private function getUniqueValue($table, $column)
+    /**
+     * Drop all foreign keys because it is too complicated to solve the table reference graph in order to generate data in the right order.
+     * FKs are stored to be recreated at the end
+     */
+    private function dropForeignKeys() : void
     {
-
+        $tables = $this->schemaManager->listTables();
+        foreach ($tables as $table){
+            foreach ($table->getForeignKeys() as $fk){
+                $this->foreignKeyStore[$table->getName()][] = $fk;
+                $this->schemaManager->dropForeignKey($fk, $table);
+            }
+        }
     }
+
+    /**
+     * Restore the foreign keys based on the ForeignKeys store built when calling dropForeignKeys()
+     */
+    private function restoreForeignKeys() : void
+    {
+        foreach ($this->foreignKeyStore as $tableName => $fks){
+            foreach ($fks as $fk){
+                $this->schemaManager->createForeignKey($fk, $tableName);
+            }
+        }
+    }
+
+    private function dropMultipleUniqueContraints()
+    {
+        $tables = $this->schemaManager->listTables();
+        foreach ($tables as $table){
+            foreach ($table->getIndexes() as $index){
+                if ($index->isUnique() && count($index->getColumns()) > 1)
+                $this->multipleUniqueContraintStore[$table->getName()][] = $index;
+                $this->schemaManager->dropIndex($index->getName(), $table->getName());
+            }
+        }
+    }
+
+    private function restoreMultipleUniqueContraints()
+    {
+        foreach ($this->multipleUniqueContraintStore as $tableName => $indexes){
+            foreach ($indexes as $index){
+                $this->schemaManager->createIndex($index, $tableName);
+            }
+        }
+    }
+
+    /**
+     *
+     * Sets data for a group of columns (2 or more) that are bound by a unique constraint
+     * @return string[]
+     */
+    private function updateMulipleUniqueIndexedColumns() : array
+    {
+        $handledColumns = [];
+
+        foreach ($this->multipleUniqueContraintStore as $tableName => $indexes){
+            $table = $this->schemaManager->listTableDetails($tableName);
+
+            foreach ($indexes as $index){
+
+            }
+
+            //Get all the PKs in the table (ie all the lines to update), and update the FKs with random PK values
+            $pkValues = $this->getPkRegistry($table)->loadValuesFromTable()->getAllValues();
+            foreach ($pkValues as $pkValue){
+                //TODO generate and insert data
+                $newValues = [];
+                $this->connection->update($tableName, $newValues, $pkValue);
+            }
+        }
+
+
+        return $handledColumns;
+    }
+
+    private function updateRemainingForeignKeys($handledColumns)
+    {
+        foreach ($this->foreignKeyStore as $tableName => $fks){
+            if (array_search($tableName, array_keys($this->fakeTableRowNumbers)) === false){
+                //only update tables where data has been inserted
+                continue;
+            }
+            $table = $this->schemaManager->listTableDetails($tableName);
+
+
+            //Get all the PKs in the table (ie all the lines to update), and update the FKs with random PK values
+            $pkValues = $this->getPkRegistry($table)->loadValuesFromTable()->getAllValues();
+            foreach ($pkValues as $pkValue){
+                $newValues = [];
+                foreach ($fks as $fk) {
+                    $foreignTable = $this->schemaManager->listTableDetails($fk->getForeignTableName());
+                    $localColums = $fk->getLocalColumns();
+                    foreach ($localColums as $index => $localColumn) {
+                        if (array_search($localColumn, $handledColumns) === false){
+                            continue;
+                        }
+                        $column = $table->getColumn($localColumn);
+                        $foreignColumn = $this->schemaHelper->getForeignColumn($table, $column);
+                        $randomPk = $this->getRandomValueForPk($foreignTable, $foreignColumn);
+                        $newValues[$localColumn] = $randomPk[$foreignColumn];
+                    }
+                }
+                $this->connection->update($tableName, $newValues, $pkValue);
+            }
+        }
+    }
+
+    private function getRandomValueForPk(Table $table, Column $column)
+    {
+        $fkPkRegistry = $this->getPkRegistry($table->getName());
+        $randomPk = $fkPkRegistry->loadValuesFromTable()->getRandomValue();
+        return $randomPk[$column->getName()];
+    }
+
 
 }

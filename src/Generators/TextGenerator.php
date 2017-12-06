@@ -6,31 +6,26 @@ use Doctrine\DBAL\Schema\Column;
 use Faker\Factory;
 use Faker\Generator;
 
-class SimpleGenerator implements FakeDataGeneratorInterface
+class TextGenerator implements FakeDataGeneratorInterface
 {
-
-    /**
-     * @var string
-     */
-    private $fakerProperty;
 
     /**
      * @var Generator
      */
     private $faker;
 
-    public function __construct(string $fakerProperty, $generateUniqueValues = false)
+    public function __construct($generateUniqueValues = false)
     {
         $this->faker = Factory::create();
         if ($generateUniqueValues){
             $this->faker->unique();
         }
-        $this->fakerProperty = $fakerProperty;
     }
 
     public function __invoke(Column $column)
     {
-        return $this->faker->{fakerProperty};
+        $maxLength = $column->getLength() > 5 ? max($column->getLength(), 300) : $column->getLength();
+        return $column->getLength() > 5 ? $this->faker->text($maxLength) : substr($this->faker->text(5), 0, $column->getLength() - 1);
     }
 
 

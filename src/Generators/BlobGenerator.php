@@ -1,7 +1,7 @@
 <?php
 namespace DBFaker\Generators;
 
-
+use DBFaker\Exceptions\NoTestFilesFoundException;
 use Doctrine\DBAL\Schema\Column;
 
 class BlobGenerator implements FakeDataGeneratorInterface
