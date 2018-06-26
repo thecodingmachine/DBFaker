@@ -1,8 +1,8 @@
 <?php
 namespace DBFaker\Generators;
 
-use DBFaker\Generators\Conditions\ConditionInterface;
 use DBFaker\Exceptions\UnsupportedDataTypeException;
+use DBFaker\Generators\Conditions\ConditionInterface;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
 

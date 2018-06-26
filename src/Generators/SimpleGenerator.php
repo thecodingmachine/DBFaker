@@ -2,7 +2,6 @@
 namespace DBFaker\Generators;
 
 
-use Doctrine\DBAL\Schema\Column;
 use Faker\Factory;
 use Faker\Generator;
 

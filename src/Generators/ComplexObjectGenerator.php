@@ -1,7 +1,6 @@
 <?php
 namespace DBFaker\Generators;
 
-use DBFaker\DBFaker;
 use Doctrine\DBAL\Schema\Column;
 use Faker\Factory;
 use Faker\Generator;

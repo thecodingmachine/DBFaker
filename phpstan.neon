@@ -1,6 +1,6 @@
 includes:
     - vendor/thecodingmachine/phpstan-strict-rules/phpstan-strict-rules.neon
 parameters:
-    ignoreErrors:
-        - '#return type is "array"#'
-        - '#Access to an undefined property Faker\\Generator\:\:\$#'
+    #ignoreErrors:
+    #    - '#return type is "array"#'
+    #    - '#Access to an undefined property Faker\\Generator\:\:\$#'

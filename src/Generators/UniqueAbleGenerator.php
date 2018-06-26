@@ -3,7 +3,6 @@ namespace DBFaker\Generators;
 
 use DBFaker\DBFaker;
 use Doctrine\DBAL\Schema\Column;
-use Faker\Generator;
 
 abstract class UniqueAbleGenerator implements FakeDataGeneratorInterface
 {

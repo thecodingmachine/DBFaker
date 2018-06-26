@@ -5,8 +5,6 @@ namespace DBFaker\Generators;
 use DBFaker\Helpers\NumericColumnLimitHelper;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Types\Type;
-use Faker\Generator;
 
 class NumericGeneratorFactory implements FakeDataGeneratorFactoryInterface
 {
