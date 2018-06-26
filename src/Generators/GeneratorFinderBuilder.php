@@ -28,8 +28,10 @@ class GeneratorFinderBuilder
 
     /**
      * @return GeneratorFinderBuilder
+     * @throws \DBFaker\Exceptions\UnsupportedDataTypeException
      */
-    public static function buildDefaultFinderBuilder(){
+    public static function buildDefaultFinderBuilder() : GeneratorFinderBuilder
+    {
         $builder = new GeneratorFinderBuilder([]);
 
         $typeFactories = [

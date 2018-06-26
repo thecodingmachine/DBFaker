@@ -12,7 +12,7 @@ class TextGeneratorFactory implements FakeDataGeneratorFactoryInterface
     {
         $schemaHelper = new SchemaHelper();
         $unique = $schemaHelper->isColumnPartOfUniqueIndex($table, $column);
-        return new TextGenerator($unique);
+        return new TextGenerator($column, $unique);
     }
 
 

@@ -15,9 +15,7 @@ class DateTimeImmutableGenerator implements FakeDataGeneratorInterface
 
     /**
      * ComplexObjectGenerator constructor.
-     * @param Generator $generator
-     * @param int|null $depth
-     * @param bool $toArray
+     * @param bool $generateUniqueValues
      */
     public function __construct($generateUniqueValues = false)
     {
@@ -28,10 +26,9 @@ class DateTimeImmutableGenerator implements FakeDataGeneratorInterface
     }
 
     /**
-     * @param Column $column
-     * @return mixed
+     * @return \DateTimeImmutable
      */
-    public function __invoke(Column $column)
+    public function __invoke() : \DateTimeImmutable
     {
         return \DateTimeImmutable::createFromMutable($this->faker->dateTime);
     }

@@ -20,7 +20,7 @@ class NumericGeneratorFactory implements FakeDataGeneratorFactoryInterface
         $min = $inspector->getMinNumericValue();
         $max = $inspector->getMaxNumericValue();
 
-        return new NumericGenerator($min, $max, $unique);
+        return new NumericGenerator($column, $min, $max, $unique);
     }
 
 

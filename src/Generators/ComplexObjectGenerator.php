@@ -26,26 +26,27 @@ class ComplexObjectGenerator extends UniqueAbleGenerator
 
     /**
      * ComplexObjectGenerator constructor.
-     * @param Generator $generator
+     * @param Column $column
      * @param int|null $depth
      * @param bool $toArray
+     * @param bool $generateUniqueValues
      */
-    public function __construct(int $depth = null, bool $toArray = true, $generateUniqueValues = false)
+    public function __construct(Column $column, int $depth = null, bool $toArray = true, $generateUniqueValues = false)
     {
-        parent::__construct($generateUniqueValues);
+        parent::__construct($column, $generateUniqueValues);
         $this->generator = Factory::create();
         $this->depth = $depth ?? random_int(2, 5);
         $this->toArray = $toArray;
     }
 
-    protected function generateRandomValue()
+    protected function generateRandomValue(Column $column)
     {
         return $this->generateRandomObject($this->depth);
     }
 
     /**
      * @param int $depth
-     * @return mixed
+     * @return \stdClass
      */
     private function generateRandomObject(int $depth) : \stdClass
     {
@@ -54,7 +55,7 @@ class ComplexObjectGenerator extends UniqueAbleGenerator
         $hasGoneDeeper = false;
         for ($i = 0; $i < $nbProps; $i++){
             $propName = $this->randomPropName();
-            $goDeeper = $depth != 0 && (random_int(0,10) > 7 || !$hasGoneDeeper);
+            $goDeeper = $depth !== 0 && (random_int(0,10) > 7 || !$hasGoneDeeper);
             if ($goDeeper){
                 $hasGoneDeeper = true;
                 $value = $this->generateRandomObject($depth - 1);
@@ -92,7 +93,7 @@ class ComplexObjectGenerator extends UniqueAbleGenerator
      */
     private function randomPropName() : string
     {
-        return str_replace(".", "", $this->generator->userName);
+        return str_replace('.', '', $this->generator->userName);
     }
 
 }

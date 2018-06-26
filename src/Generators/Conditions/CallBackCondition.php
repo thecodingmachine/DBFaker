@@ -24,10 +24,12 @@ class CallBackCondition implements ConditionInterface
     }
 
     /**
+     * @param Table $table
+     * @param Column $column
      * @return bool : if the Generator will be applied
      */
     public function canApply(Table $table, Column $column) : bool
     {
-        return call_user_func($this->callback, $table, $column);
+        return \call_user_func($this->callback, $table, $column);
     }
 }

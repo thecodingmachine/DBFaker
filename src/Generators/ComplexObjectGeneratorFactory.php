@@ -29,10 +29,15 @@ class ComplexObjectGeneratorFactory implements FakeDataGeneratorFactoryInterface
         $this->toArray = $toArray;
     }
 
+    /**
+     * @param Table $table
+     * @param Column $column
+     * @return FakeDataGeneratorInterface
+     */
     public function create(Table $table, Column $column): FakeDataGeneratorInterface
     {
         $schemaHelper = new SchemaHelper();
         $unique = $schemaHelper->isColumnPartOfUniqueIndex($table, $column);
-        return new ComplexObjectGenerator($this->depth, $this->toArray, $unique);
+        return new ComplexObjectGenerator($column, $this->depth, $this->toArray, $unique);
     }
 }

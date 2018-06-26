@@ -28,9 +28,12 @@ class SimpleGenerator implements FakeDataGeneratorInterface
         $this->fakerProperty = $fakerProperty;
     }
 
-    public function __invoke(Column $column)
+    /**
+     * @return mixed
+     */
+    public function __invoke()
     {
-        return $this->faker->{fakerProperty};
+        return $this->faker->{$this->fakerProperty};
     }
 
 

@@ -14,26 +14,31 @@ abstract class UniqueAbleGenerator implements FakeDataGeneratorInterface
     private $generateUniqueValues;
 
     /**
-     * ComplexObjectGenerator constructor.
-     * @param Generator $generator
-     * @param int|null $depth
-     * @param bool $toArray
+     * @var Column
      */
-    public function __construct($generateUniqueValues = false)
+    private $column;
+
+    /**
+     * ComplexObjectGenerator constructor.
+     * @param Column $column
+     * @param bool $generateUniqueValues
+     */
+    public function __construct(Column $column, $generateUniqueValues = false)
     {
         $this->generateUniqueValues = $generateUniqueValues;
+        $this->column = $column;
     }
 
     /**
      * @param Column $column
      * @return mixed
      */
-    public function __invoke(Column $column)
+    public function __invoke()
     {
         $object = $this->generateRandomValue();
         $iterations = 1;
         while (!$this->isUnique($object)){
-            $object = $this->generateRandomValue($column);
+            $object = $this->generateRandomValue($this->column);
             $iterations++;
             if ($iterations > DBFaker::MAX_ITERATIONS_FOR_UNIQUE_VALUE){
                 throw new MaxNbOfIterationsForUniqueValueException("Unable to generate a unique value in less then maximumn allowed iterations.");
@@ -46,14 +51,18 @@ abstract class UniqueAbleGenerator implements FakeDataGeneratorInterface
 
     protected abstract function generateRandomValue(Column $column);
 
-    private function storeObjectInGeneratedValues($object)
+    private function storeObjectInGeneratedValues($object) : void
     {
         if ($this->generateUniqueValues){
             $this->generatedValues[] = $object;
         }
     }
 
-    private function isUnique($object)
+    /**
+     * @param mixed $object
+     * @return bool
+     */
+    private function isUnique($object) : bool
     {
         if (!$this->generateUniqueValues){
             return true;

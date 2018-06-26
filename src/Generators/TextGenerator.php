@@ -14,18 +14,28 @@ class TextGenerator implements FakeDataGeneratorInterface
      */
     private $faker;
 
-    public function __construct($generateUniqueValues = false)
+    /**
+     * @var Column
+     */
+    private $column;
+
+    public function __construct(Column $column, $generateUniqueValues = false)
     {
         $this->faker = Factory::create();
         if ($generateUniqueValues){
             $this->faker->unique();
         }
+        $this->column = $column;
     }
 
-    public function __invoke(Column $column)
+    /**
+     * @return string
+     */
+    public function __invoke() : string
     {
-        $maxLength = $column->getLength() > 5 ? max($column->getLength(), 300) : $column->getLength();
-        return $column->getLength() > 5 ? $this->faker->text($maxLength) : substr($this->faker->text(5), 0, $column->getLength() - 1);
+        $colLength = $this->column->getLength();
+        $maxLength = $colLength > 5 ? max($colLength, 300) : $colLength;
+        return $colLength > 5 ? $this->faker->text($maxLength) : substr($this->faker->text(5), 0, $colLength - 1);
     }
 
 

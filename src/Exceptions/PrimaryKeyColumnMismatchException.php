@@ -1,5 +1,5 @@
 <?php
-namespace DBFaker\Helpers;
+namespace DBFaker\Exceptions;
 
 
 class PrimaryKeyColumnMismatchException extends \RuntimeException

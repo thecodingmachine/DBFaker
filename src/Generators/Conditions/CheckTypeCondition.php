@@ -17,6 +17,8 @@ class CheckTypeCondition implements ConditionInterface
     /**
      * CheckTypeCondition constructor.
      * @param Type $type : the Type to check
+     * @throws \DBFaker\Exceptions\UnsupportedDataTypeException
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function __construct(Type $type)
     {
@@ -27,6 +29,8 @@ class CheckTypeCondition implements ConditionInterface
     }
 
     /**
+     * @param Table $table
+     * @param Column $column
      * @return bool : if the Generator will be applied
      */
     public function canApply(Table $table, Column $column) : bool

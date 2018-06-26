@@ -2,8 +2,11 @@
 namespace DBFaker\Helpers;
 
 
+use DBFaker\Exceptions\RuntimeSchemaException;
+use DBFaker\Exceptions\SchemaLogicException;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\Table;
 
 class SchemaHelper
@@ -23,6 +26,11 @@ class SchemaHelper
     }
 
 
+    /**
+     * @param Table $table
+     * @param Column $column
+     * @return bool
+     */
     public function isColumnPartOfUniqueIndex(Table $table, Column $column): bool
     {
         $indexes = $table->getIndexes();
@@ -40,12 +48,25 @@ class SchemaHelper
         return false;
     }
 
-    public function isPrimaryKeyColumn(Table $table, Column $column)
+    /**
+     * @param Table $table
+     * @param Column $column
+     * @return bool
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function isPrimaryKeyColumn(Table $table, Column $column) : bool
     {
-        return array_search($column->getName(), $table->getPrimaryKeyColumns()) !== false;
+        return \in_array($column->getName(), $table->getPrimaryKeyColumns(), true);
     }
 
-    public function getForeignColumn(Table $table, Column $column)
+    /**
+     * @param Table $table
+     * @param Column $column
+     * @return Column
+     * @throws \DBFaker\Exceptions\SchemaLogicException
+     * @throws \Doctrine\DBAL\Schema\SchemaException
+     */
+    public function getForeignColumn(Table $table, Column $column) : Column
     {
         if (isset($this->foreignKeyMappings[$table->getName()][$column->getName()])){
             return $this->foreignKeyMappings[$table->getName()][$column->getName()]["column"];
@@ -60,15 +81,42 @@ class SchemaHelper
             foreach ($localColumns as $index => $localColumn){
                 $foreignColumn = $foreignColumns[$index];
                 $this->foreignKeyMappings[$table->getName()][$localColumn] = ["table" => $foreignTable, "column" => $foreignTable->getColumn($foreignColumn)];
-                if ($localColumn == $column->getName()){
+                if ($localColumn === $column->getName()){
                     $lookupColumn = $foreignTable->getColumn($foreignColumn);
                 }
             }
         }
 
         if (!$lookupColumn){
-            throw new
+            throw new SchemaLogicException("Could not find foreign column for local column '".$table->getName().".".$column->getName()."'");
         }
+        return $lookupColumn;
+    }
+
+    /**
+     * @param Table $table
+     * @param Column $column
+     * @return bool
+     */
+    public function isColumnPartOfForeignKeyConstraint(Table $table, Column $column): bool
+    {
+        $constraint = $this->getForeignKeyConstraintByLocal($table, $column);
+        return $constraint !== null;
+    }
+
+    /**
+     * @param Table $table
+     * @param Column $column
+     * @return ForeignKeyConstraint|null
+     */
+    public function getForeignKeyConstraintByLocal(Table $table, Column $column) : ?ForeignKeyConstraint
+    {
+        foreach ($table->getForeignKeys() as $foreignKeyConstraint){
+            if (\in_array($column->getName(), $foreignKeyConstraint->getLocalColumns(), true)){
+                return $foreignKeyConstraint;
+            }
+        }
+        return null;
     }
 
 }

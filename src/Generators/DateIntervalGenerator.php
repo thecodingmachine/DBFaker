@@ -15,9 +15,7 @@ class DateIntervalGenerator implements FakeDataGeneratorInterface
 
     /**
      * ComplexObjectGenerator constructor.
-     * @param Generator $generator
-     * @param int|null $depth
-     * @param bool $toArray
+     * @param bool $generateUniqueValues
      */
     public function __construct($generateUniqueValues = false)
     {
@@ -28,10 +26,9 @@ class DateIntervalGenerator implements FakeDataGeneratorInterface
     }
 
     /**
-     * @param Column $column
-     * @return mixed
+     * @return \DateInterval|false
      */
-    public function __invoke(Column $column)
+    public function __invoke() : \DateInterval
     {
         return $this->faker->dateTime->diff($this->faker->dateTime);
     }

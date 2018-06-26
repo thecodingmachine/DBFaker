@@ -9,6 +9,11 @@ use Faker\Generator;
 class DateTimeImmutableGeneratorFactory implements FakeDataGeneratorFactoryInterface
 {
 
+    /**
+     * @param Table $table
+     * @param Column $column
+     * @return FakeDataGeneratorInterface
+     */
     public function create(Table $table, Column $column) : FakeDataGeneratorInterface
     {
         $schemaHelper = new SchemaHelper();

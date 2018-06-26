@@ -30,13 +30,14 @@ class NumericColumnLimitHelper
     /**
      * NumericColumnLimitHelper constructor
      * @param Column $column
+     * @throws \DBFaker\Exceptions\UnsupportedDataTypeException
      */
     public function __construct(Column $column)
     {
-        if (array_search($column->getType()->getName(), self::$handledNumberTypes) === false){
-            throw new UnsupportedDataTypeException("Unsupported column type : " .
-                $column->getType()->getName() . "only " .
-                implode("', '", self::$handledNumberTypes) ." types are supported."
+        if (!\in_array($column->getType()->getName(), self::$handledNumberTypes, true)){
+            throw new UnsupportedDataTypeException('Unsupported column type : ' .
+                $column->getType()->getName() . 'only ' .
+                implode("', '", self::$handledNumberTypes) . ' types are supported.'
             );
         }
         $this->column = $column;
@@ -44,7 +45,7 @@ class NumericColumnLimitHelper
 
     /**
      * returns the min numeric value for the column
-     * @return mixed
+     * @return int|float|string
      */
     public function getMinNumericValue()
     {
@@ -70,7 +71,7 @@ class NumericColumnLimitHelper
 
     /**
      * returns the max numeric value for the column
-     * @return mixed
+     * @return int|float|string
      */
     public function getMaxNumericValue()
     {
@@ -91,14 +92,14 @@ class NumericColumnLimitHelper
 
     /**
      * @param Column $column
-     * @return mixed
+     * @return double|int
      */
     private function getAbsValueByLengthPrecision(Column $column)
     {
         switch ($column->getType()->getName()){
             case Type::DECIMAL:
                 $str = str_repeat(9, $column->getScale());
-                return (double) substr_replace($str, ".", $column->getScale() - $column->getPrecision(), 0);
+                return (double) substr_replace($str, '.', $column->getScale() - $column->getPrecision(), 0);
             case Type::INTEGER:
                 $str = str_repeat(9, $column->getPrecision() - 1);
                 return (int) $str;

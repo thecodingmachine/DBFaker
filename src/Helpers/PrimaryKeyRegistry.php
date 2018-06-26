@@ -2,10 +2,10 @@
 namespace DBFaker\Helpers;
 
 
+use DBFaker\Exceptions\PrimaryKeyColumnMismatchException;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Types\Type;
 
 class PrimaryKeyRegistry
 {
@@ -72,13 +72,14 @@ class PrimaryKeyRegistry
         $keys = array_keys($value);
         sort($keys);
         if ($this->columns == $keys){
-            throw new PrimaryKeyColumnMismatchException("PrimaryKeys do not match between PKStore and addValue");
+            throw new PrimaryKeyColumnMismatchException('PrimaryKeys do not match between PKStore and addValue');
         }
         $this->values[] = $value;
     }
 
     /**
      * @return mixed[]
+     * @throws \Exception
      */
     public function getRandomValue() : array
     {
