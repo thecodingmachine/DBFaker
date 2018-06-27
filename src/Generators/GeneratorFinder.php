@@ -15,6 +15,11 @@ class GeneratorFinder
     private $generatorFactories;
 
     /**
+     * @var FakeDataGeneratorInterface[]
+     */
+    private $generators;
+
+    /**
      * GeneratorFinder constructor.
      * @param FakeDataGeneratorFactoryInterface[] $generatorFactories
      */

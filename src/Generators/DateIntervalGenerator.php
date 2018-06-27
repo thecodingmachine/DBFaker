@@ -16,7 +16,7 @@ class DateIntervalGenerator implements FakeDataGeneratorInterface
      * ComplexObjectGenerator constructor.
      * @param bool $generateUniqueValues
      */
-    public function __construct($generateUniqueValues = false)
+    public function __construct(bool $generateUniqueValues = false)
     {
         $this->faker = Factory::create();
         if ($generateUniqueValues){
@@ -25,7 +25,7 @@ class DateIntervalGenerator implements FakeDataGeneratorInterface
     }
 
     /**
-     * @return \DateInterval|false
+     * @return \DateInterval
      */
     public function __invoke() : \DateInterval
     {

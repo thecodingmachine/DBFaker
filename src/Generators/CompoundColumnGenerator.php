@@ -4,6 +4,7 @@ namespace DBFaker\Generators;
 
 
 use DBFaker\DBFaker;
+use DBFaker\Exceptions\SchemaLogicException;
 use DBFaker\Helpers\SchemaHelper;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Index;
@@ -31,6 +32,7 @@ class CompoundColumnGenerator implements FakeDataGeneratorInterface
      * @param DBFaker $dbFaker
      * @param AbstractSchemaManager $schemaManager
      * @param int $valuesCount
+     * @throws \DBFaker\Exceptions\SchemaLogicException
      * @throws \DBFaker\Exceptions\UnsupportedDataTypeException
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
@@ -41,6 +43,9 @@ class CompoundColumnGenerator implements FakeDataGeneratorInterface
             $column = $table->getColumn($columnName);
             if ($schemaHelper->isColumnPartOfForeignKeyConstraint($table, $column)){
                 $fkConstraint = $schemaHelper->getForeignKeyConstraintByLocal($table, $column);
+                if ($fkConstraint === null){
+                    throw new SchemaLogicException($column->getName() . ' was detected as foreign key but could not get it');
+                }
                 $foreignTableName = $fkConstraint->getForeignTableName();
                 $foreignTable = $schemaManager->listTableDetails($foreignTableName);
                 $pkRegistry = $dbFaker->getPkRegistry($foreignTable);

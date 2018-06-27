@@ -2,6 +2,7 @@
 namespace DBFaker\Generators;
 
 
+use DBFaker\Helpers\SchemaHelper;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
 
@@ -9,10 +10,14 @@ class SimpleGeneratorFactory implements FakeDataGeneratorFactoryInterface
 {
 
     /**
-     * @var callable
+     * @var string
      */
     private $callback;
 
+    /**
+     * SimpleGeneratorFactory constructor.
+     * @param string $fakerCallback
+     */
     public function __construct(string $fakerCallback)
     {
         $this->callback = $fakerCallback;

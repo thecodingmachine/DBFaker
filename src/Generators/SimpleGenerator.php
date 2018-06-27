@@ -18,7 +18,12 @@ class SimpleGenerator implements FakeDataGeneratorInterface
      */
     private $faker;
 
-    public function __construct(string $fakerProperty, $generateUniqueValues = false)
+    /**
+     * SimpleGenerator constructor.
+     * @param string $fakerProperty
+     * @param bool $generateUniqueValues
+     */
+    public function __construct(string $fakerProperty, bool $generateUniqueValues = false)
     {
         $this->faker = Factory::create();
         if ($generateUniqueValues){

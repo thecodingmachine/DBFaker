@@ -6,6 +6,7 @@ use DBFaker\Generators\FakeDataGeneratorInterface;
 use DBFaker\Generators\ForeignKeyColumnGenerator;
 use DBFaker\Generators\GeneratorFactory;
 use DBFaker\Generators\GeneratorFinder;
+use DBFaker\Helpers\DBFakerSchemaManager;
 use DBFaker\Helpers\PrimaryKeyRegistry;
 use DBFaker\Helpers\SchemaHelper;
 use Doctrine\DBAL\Connection;
@@ -110,7 +111,7 @@ class DBFaker
         $this->generatorFinder = $generatorFinder;
         $this->log = $log ?? new ErrorLogLogger();
         $this->schemaManager = $connection->getSchemaManager();
-        $this->schemaHelper = new SchemaHelper($this->schemaManager);
+        $this->schemaHelper = new SchemaHelper();
     }
 
     /**
@@ -140,7 +141,7 @@ class DBFaker
     }
 
     /**
-     * @param Table $table the table for which fakse data will be generated
+     * @param Table $table the table for which fake data will be generated
      * @param int $nbLines : the number of lines to generate
      * @return mixed[]
      * @throws \DBFaker\Exceptions\UnsupportedDataTypeException
@@ -165,9 +166,6 @@ class DBFaker
                     }else{
                         $generator = $this->getSimpleColumnGenerator($table, $column);
                         $value = $generator();
-                    }
-                    if ($this->schemaHelper->isPrimaryKeyColumn($table, $column)){
-                        $this->getPkRegistry($table)->addValue($column->getName(), $value);
                     }
                 }
                 $row[$column->getName()] = $value;
@@ -210,7 +208,7 @@ class DBFaker
             $first = reset($rows);
             if ($first){
                 foreach ($first as $columnName => $value){
-                    /** @var $column Column */
+                    /** @var Column $column */
                     $column = $table->getColumn($columnName);
                     $types[] = $column->getType()->getBindingType();
                 }
@@ -348,7 +346,7 @@ class DBFaker
             foreach ($pkValues as $pkValue){
                 $newValues = [];
                 foreach ($indexes as $index){
-                    /** @var $index Index */
+                    /** @var Index $index */
                     $compoundColumnGenerator = $this->getCompoundColumnGenerator($table, $index, \count($pkValues));
                     $newValues = array_merge($newValues, $compoundColumnGenerator());
                 }
@@ -361,10 +359,11 @@ class DBFaker
     }
 
     /**
-     * @param $handledColumns
+     * @param string[] $handledColumns
      * @throws \Doctrine\DBAL\Schema\SchemaException
+     * @throws \Doctrine\DBAL\DBALException
      */
-    private function updateRemainingForeignKeys($handledColumns): void
+    private function updateRemainingForeignKeys(array $handledColumns): void
     {
         foreach ($this->foreignKeyStore as $tableName => $fks){
             if (!array_key_exists($tableName, $this->fakeTableRowNumbers)){
@@ -416,12 +415,13 @@ class DBFaker
      * @param Column $column
      * @param Table $foreignTable
      * @return ForeignKeyColumnGenerator
+     * @throws \DBFaker\Exceptions\SchemaLogicException
      */
     public function getForeignKeyColumnGenerator(Table $table, Column $column, Table $foreignTable): ForeignKeyColumnGenerator
     {
         $identifier = $table->getName() . '.' . $column->getName();
         if (!isset($this->fkColumnsGenerators[$identifier])){
-            $fkGenerator = new ForeignKeyColumnGenerator($table, $column, $this->getPkRegistry($foreignTable), $this->schemaHelper);
+            $fkGenerator = new ForeignKeyColumnGenerator($table, $column, $this->getPkRegistry($foreignTable), new DBFakerSchemaManager($this->schemaManager));
             $this->fkColumnsGenerators[$identifier] = $fkGenerator;
 
         }

@@ -16,7 +16,7 @@ class GeneratorFinderBuilder
 
     /**
      * GeneratorFinderBuilder constructor.
-     * @param array $generators
+     * @param FakeDataGeneratorInterface[] $generators
      */
     public function __construct(array $generators)
     {
@@ -27,6 +27,7 @@ class GeneratorFinderBuilder
     /**
      * @return GeneratorFinderBuilder
      * @throws \DBFaker\Exceptions\UnsupportedDataTypeException
+     * @throws \Doctrine\DBAL\DBALException
      */
     public static function buildDefaultFinderBuilder() : GeneratorFinderBuilder
     {
@@ -39,12 +40,12 @@ class GeneratorFinderBuilder
             Type::JSON => new ComplexObjectGeneratorFactory(2),
             Type::OBJECT => new ComplexObjectGeneratorFactory(),
 
-            Type::BOOLEAN => new SimpleGeneratorFactory("boolean"),
+            Type::BOOLEAN => new SimpleGeneratorFactory('boolean'),
 
-            Type::DATETIME => new SimpleGeneratorFactory("dateTime"),
-            Type::DATETIMETZ => new SimpleGeneratorFactory("dateTime"),
-            Type::DATE => new SimpleGeneratorFactory("dateTime"),
-            Type::TIME => new SimpleGeneratorFactory("dateTime"),
+            Type::DATETIME => new SimpleGeneratorFactory('dateTime'),
+            Type::DATETIMETZ => new SimpleGeneratorFactory('dateTime'),
+            Type::DATE => new SimpleGeneratorFactory('dateTime'),
+            Type::TIME => new SimpleGeneratorFactory('dateTime'),
 
             Type::DATETIME_IMMUTABLE => new DateTimeImmutableGeneratorFactory(),
             Type::DATE_IMMUTABLE => new DateTimeImmutableGeneratorFactory(),
@@ -62,12 +63,12 @@ class GeneratorFinderBuilder
             Type::STRING => new TextGeneratorFactory(),
             Type::TEXT => new TextGeneratorFactory(),
 
-            Type::GUID => new SimpleGeneratorFactory("uuid")
+            Type::GUID => new SimpleGeneratorFactory('uuid')
         ];
 
         foreach ($typeFactories as $type => $factory) {
             $builder->addGenerator(
-                new CheckTypeCondition($type),
+                new CheckTypeCondition(Type::getType($type)),
                 $factory
             );
         }

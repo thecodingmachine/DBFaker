@@ -16,7 +16,7 @@ class DateTimeImmutableGenerator implements FakeDataGeneratorInterface
      * ComplexObjectGenerator constructor.
      * @param bool $generateUniqueValues
      */
-    public function __construct($generateUniqueValues = false)
+    public function __construct(bool $generateUniqueValues = false)
     {
         $this->faker = Factory::create();
         if ($generateUniqueValues){

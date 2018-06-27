@@ -19,7 +19,6 @@ class ComplexObjectGeneratorFactory implements FakeDataGeneratorFactoryInterface
 
     /**
      * ComplexObjectGenerator constructor.
-     * @param Generator $generator
      * @param int|null $depth
      * @param bool $toArray
      */

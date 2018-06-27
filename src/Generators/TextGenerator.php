@@ -19,7 +19,12 @@ class TextGenerator implements FakeDataGeneratorInterface
      */
     private $column;
 
-    public function __construct(Column $column, $generateUniqueValues = false)
+    /**
+     * TextGenerator constructor.
+     * @param Column $column
+     * @param bool $generateUniqueValues
+     */
+    public function __construct(Column $column, bool $generateUniqueValues = false)
     {
         $this->faker = Factory::create();
         if ($generateUniqueValues){

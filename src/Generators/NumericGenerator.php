@@ -5,17 +5,18 @@ namespace DBFaker\Generators;
 use DBFaker\Exceptions\UnsupportedDataTypeException;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Types\Type;
+use Faker\Factory;
 use Faker\Generator;
 
 class NumericGenerator extends UniqueAbleGenerator
 {
 
     /**
-     * @var
+     * @var mixed
      */
     private $min;
     /**
-     * @var
+     * @var mixed
      */
     private $max;
     /**
@@ -28,6 +29,13 @@ class NumericGenerator extends UniqueAbleGenerator
      */
     private $faker;
 
+    /**
+     * NumericGenerator constructor.
+     * @param Column $column
+     * @param mixed $min
+     * @param mixed $max
+     * @param bool $generateUniqueValues
+     */
     public function __construct(Column $column, $min, $max, $generateUniqueValues = false)
     {
         parent::__construct($column, $generateUniqueValues);
@@ -40,13 +48,13 @@ class NumericGenerator extends UniqueAbleGenerator
     /**
      * @param Column $column
      * @return int|string|float
-     * @throws \DBFaker\Exceptions\UnsupportedDataTypeException
+     * @throws \Exception
      */
     protected function generateRandomValue(Column $column)
     {
         switch ($column->getType()->getName()){
             case Type::BIGINT:
-                return $this->bigRandomNumber($this->min, $this->max);
+                return $this->bigRandomNumber();
             case Type::INTEGER:
             case Type::SMALLINT:
                 return random_int($this->min, $this->max);
@@ -59,15 +67,13 @@ class NumericGenerator extends UniqueAbleGenerator
     }
 
     /**
-     * @param $min
-     * @param $max
      * @return string
      */
-    private function bigRandomNumber($min, $max) : string
+    private function bigRandomNumber() : string
     {
-        $difference   = bcadd(bcsub($max,$min),1);
-        $rand_percent = bcdiv(mt_rand(), mt_getrandmax(), 8); // 0 - 1.0
-        return bcadd($min, bcmul($difference, $rand_percent, 8), 0);
+        $difference   = bcadd(bcsub($this->max,$this->min),"1");
+        $rand_percent = bcdiv((string) mt_rand(), (string) mt_getrandmax(), 8); // 0 - 1.0
+        return bcadd($this->min, bcmul($difference, $rand_percent, 8), 0);
     }
 
 }

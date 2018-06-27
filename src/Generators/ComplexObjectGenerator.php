@@ -1,6 +1,7 @@
 <?php
 namespace DBFaker\Generators;
 
+use DBFaker\Exceptions\DBFakerException;
 use Doctrine\DBAL\Schema\Column;
 use Faker\Factory;
 use Faker\Generator;
@@ -38,6 +39,10 @@ class ComplexObjectGenerator extends UniqueAbleGenerator
         $this->toArray = $toArray;
     }
 
+    /**
+     * @param Column $column
+     * @return mixed
+     */
     protected function generateRandomValue(Column $column)
     {
         return $this->generateRandomObject($this->depth);
@@ -45,16 +50,17 @@ class ComplexObjectGenerator extends UniqueAbleGenerator
 
     /**
      * @param int $depth
-     * @return \stdClass
+     * @return \stdClass|array
+     * @throws \DBFaker\Exceptions\DBFakerException
      */
-    private function generateRandomObject(int $depth) : \stdClass
+    private function generateRandomObject(int $depth)
     {
         $obj = new \stdClass();
-        $nbProps = random_int(2, 5);
+        $nbProps = \random_int(2, 5);
         $hasGoneDeeper = false;
         for ($i = 0; $i < $nbProps; $i++){
             $propName = $this->randomPropName();
-            $goDeeper = $depth !== 0 && (random_int(0,10) > 7 || !$hasGoneDeeper);
+            $goDeeper = $depth !== 0 && (\random_int(0,10) > 7 || !$hasGoneDeeper);
             if ($goDeeper){
                 $hasGoneDeeper = true;
                 $value = $this->generateRandomObject($depth - 1);
@@ -65,7 +71,11 @@ class ComplexObjectGenerator extends UniqueAbleGenerator
         }
 
         if ($this->toArray){
-            $obj = json_decode(json_encode($obj, JSON_OBJECT_AS_ARRAY), true);
+            $obj = json_encode($obj, JSON_OBJECT_AS_ARRAY);
+            if (!$obj){
+                throw new DBFakerException('Could not convert generated object to Json String');
+            }
+            $obj = json_decode($obj, true);
         }
         return $obj;
     }

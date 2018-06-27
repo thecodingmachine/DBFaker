@@ -19,9 +19,7 @@ class DBFakerCommand extends Command
 
     /**
      * DBFaker constructor.
-     * @param Connection $connection
-     * @param GeneratorFactory $generatorFactory
-     * @param SchemaAnalyzer $schemaAnalyzer
+     * @param DBFaker $faker
      */
     public function __construct(DBFaker $faker)
     {

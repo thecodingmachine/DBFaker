@@ -3,6 +3,7 @@ namespace DBFaker\Helpers;
 
 
 use DBFaker\Exceptions\PrimaryKeyColumnMismatchException;
+use DBFaker\Exceptions\SchemaLogicException;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
@@ -16,7 +17,7 @@ class PrimaryKeyRegistry
     private $table;
 
     /**
-     * @var Column[]
+     * @var string[]
      */
     private $columns;
 
@@ -32,19 +33,25 @@ class PrimaryKeyRegistry
 
     /**
      * PrimaryKeyRegistry constructor.
+     * @param Connection $connection
      * @param Table $table
-     * @param $column
+     * @throws \DBFaker\Exceptions\SchemaLogicException
      */
     public function __construct(Connection $connection, Table $table)
     {
         $this->connection = $connection;
         $this->table = $table;
-        $this->columns = $table->getPrimaryKey()->getColumns();
+        $pk = $table->getPrimaryKey();
+        if ($pk === null){
+            throw new SchemaLogicException('No PK on table ' . $table->getName());
+        }
+        $this->columns = $pk->getColumns();
         sort($this->columns);
     }
 
     /**
      * Loads all PK values fro ma table and stores them
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function loadValuesFromTable() : PrimaryKeyRegistry
     {
@@ -63,9 +70,7 @@ class PrimaryKeyRegistry
 
     /**
      * Adds a PK value to the store
-     * @param int[] $value
-     * @param string|null $columnName
-     * @throws PrimaryKeyColumnMismatchException
+     * @param mixed[] $value
      */
     public function addValue(array $value) : void
     {

@@ -16,7 +16,7 @@ class CallBackCondition implements ConditionInterface
 
     /**
      * CheckTypeCondition constructor.
-     * @param Type $type : the Type to check
+     * @param callable $callback
      */
     public function __construct(callable $callback)
     {
