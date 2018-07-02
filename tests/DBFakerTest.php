@@ -2,9 +2,12 @@
 namespace DBFaker;
 
 use DBFaker\Generators\BlobGenerator;
+use DBFaker\Generators\BlobGeneratorFactory;
 use DBFaker\Generators\Conditions\CallBackCondition;
 use DBFaker\Generators\Conditions\CheckTypeCondition;
 use DBFaker\Generators\SimpleGenerator;
+use DBFaker\Generators\SimpleGeneratorFactory;
+use DBFaker\Helpers\SchemaHelper;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\PDOMySql\Driver;
@@ -103,18 +106,14 @@ class DBFakerTest extends TestCase
         /* Don't hesitate to use the Faker package to generate random data,
            there is plenty of data types available (IBAN, address, country code, ...).
         */
-        $dataFaker = \Faker\Factory::create();//you could pass the locale to generate localized data !
+//        $dataFaker = \Faker\Factory::create();//you could pass the locale to generate localized data !
 
         // address.postal_code column is a varchar, so default generated data will be text. Here we want a postal code :
         $generatorFinderBuilder->addGenerator(
             new \DBFaker\Generators\Conditions\CallBackCondition(function(\Doctrine\DBAL\Schema\Table $table,  \Doctrine\DBAL\Schema\Column $column){
                 return $table->getName() == "address" && $column->getName() == "postal_code";
             }),
-            new SimpleGenerator(
-                function() use ($dataFaker){
-                    return $dataFaker->postcode;
-                }
-            )
+            new SimpleGeneratorFactory("postcode")
         );
 
         // all columns that end with "_email" or are named exactly "email" should be emails
@@ -122,21 +121,16 @@ class DBFakerTest extends TestCase
             new CallBackCondition(function(\Doctrine\DBAL\Schema\Table $table,  \Doctrine\DBAL\Schema\Column $column){
                 return preg_match("/([(.*_)|_|]|^)email$/", $column->getName()) === 1;
             }),
-            new SimpleGenerator(
-                function() use ($dataFaker){
-                    return $dataFaker->email;
-                }
-            )
+            new SimpleGeneratorFactory("email")
         );
 
         $generatorFinderBuilder->addGenerator(
-            new CheckTypeCondition(Type::BLOB),
-            new BlobGenerator(__DIR__ . "/fixtures/*")
+            new CheckTypeCondition(Type::getType(Type::BLOB)),
+            new BlobGeneratorFactory(__DIR__ . "/fixtures/*")
         );
-
         $generatorFinderBuilder->addGenerator(
-            new CheckTypeCondition(Type::BINARY),
-            new BlobGenerator(__DIR__ . "/fixtures/*")
+            new CheckTypeCondition(Type::getType(Type::BINARY)),
+            new BlobGeneratorFactory(__DIR__ . "/fixtures/*")
         );
 
         $faker = new \DBFaker\DBFaker($conn, $generatorFinderBuilder->buildFinder());

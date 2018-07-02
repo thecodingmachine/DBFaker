@@ -22,10 +22,7 @@ class CheckTypeCondition implements ConditionInterface
      */
     public function __construct(Type $type)
     {
-        if (!Type::hasType($type)){
-            throw new UnsupportedDataTypeException("Type '$$type' is not supported, please add it to DBAL types list (see Type::addType())");
-        }
-        $this->type = Type::getType($type);
+        $this->type = $type;
     }
 
     /**

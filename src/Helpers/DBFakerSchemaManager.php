@@ -17,14 +17,14 @@ use Doctrine\DBAL\Schema\Table;
 class DBFakerSchemaManager
 {
     /**
-     * @var AbstractSchemaManager
-     */
-    private $schemaManager;
-
-    /**
      * @var mixed[]
      */
     private $foreignKeyMappings;
+
+    /**
+     * @var AbstractSchemaManager
+     */
+    private $schemaManager;
 
     /**
      * DBFakerSchemaManager constructor.

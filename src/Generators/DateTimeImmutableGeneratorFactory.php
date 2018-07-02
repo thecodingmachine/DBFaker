@@ -11,11 +11,11 @@ class DateTimeImmutableGeneratorFactory implements FakeDataGeneratorFactoryInter
     /**
      * @param Table $table
      * @param Column $column
+     * @param SchemaHelper $schemaHelper
      * @return FakeDataGeneratorInterface
      */
-    public function create(Table $table, Column $column) : FakeDataGeneratorInterface
+    public function create(Table $table, Column $column, SchemaHelper $schemaHelper) : FakeDataGeneratorInterface
     {
-        $schemaHelper = new SchemaHelper();
         $unique = $schemaHelper->isColumnPartOfUniqueIndex($table, $column);
         return new DateTimeImmutableGenerator($unique);
     }

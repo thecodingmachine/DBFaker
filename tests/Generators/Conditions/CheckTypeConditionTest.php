@@ -12,8 +12,8 @@ class CheckTypeConditionTest extends TestCase
         $table = new Table("foo");
         $column = new Column("bar", Type::getType(Type::DECIMAL));
 
-        $checkDecimalTypeCondition = new CheckTypeCondition(Type::DECIMAL);
-        $checkTextTypeCondition = new CheckTypeCondition(Type::TEXT);
+        $checkDecimalTypeCondition = new CheckTypeCondition(Type::getType(Type::DECIMAL));
+        $checkTextTypeCondition = new CheckTypeCondition(Type::getType(Type::TEXT));
         $this->assertTrue($checkDecimalTypeCondition->canApply($table, $column));
         $this->assertFalse($checkTextTypeCondition->canApply($table, $column));
     }

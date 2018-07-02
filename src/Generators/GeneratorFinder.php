@@ -3,6 +3,7 @@ namespace DBFaker\Generators;
 
 use DBFaker\Exceptions\UnsupportedDataTypeException;
 use DBFaker\Generators\Conditions\ConditionInterface;
+use DBFaker\Helpers\SchemaHelper;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
 
@@ -34,14 +35,14 @@ class GeneratorFinder
      * @return FakeDataGeneratorInterface
      * @throws \DBFaker\Exceptions\UnsupportedDataTypeException
      */
-    public function findGenerator(Table $table, Column $column) : FakeDataGeneratorInterface
+    public function findGenerator(Table $table, Column $column, SchemaHelper $helper) : FakeDataGeneratorInterface
     {
         $generator = null;
         if (!isset($this->generators[$table->getName() . '.' . $column->getName()])){
             foreach ($this->generatorFactories as list($condition, $generatorFactory)){
                 /**  @var $condition ConditionInterface */
                 if ($condition->canApply($table, $column)){
-                    $generator = $generatorFactory->create($table, $column);
+                    $generator = $generatorFactory->create($table, $column, $helper);
                 }
             }
             if (!$generator){
