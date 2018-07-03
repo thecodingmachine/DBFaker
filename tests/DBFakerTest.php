@@ -134,15 +134,22 @@ class DBFakerTest extends TestCase
         );
 
         $faker = new \DBFaker\DBFaker($conn, $generatorFinderBuilder->buildFinder());
-        $faker->setFakeTableRowNumbers([
+
+        $tableRowNumbers = [
             "users" => 20,
             "persons" => 30,
             "users_roles" => 30,
             "countries" => 10,
             "regions" => 3
 
-        ]);
+        ];
+        $faker->setFakeTableRowNumbers($tableRowNumbers);
         $faker->fakeDB();
+
+        foreach ($tableRowNumbers as $tableName => $expectedCount){
+            $count = $conn->fetchColumn('SELECT count(*) from ' . $tableName);
+            $this->assertEquals($expectedCount, $count);
+        }
     }
 
     private static function getAdminConnection()

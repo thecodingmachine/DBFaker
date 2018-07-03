@@ -105,4 +105,25 @@ class SchemaHelper
         return $fkColumnNames === $pkColumnNames;
     }
 
+    /**
+     * @param ForeignKeyConstraint $fk
+     * @return bool
+     */
+    public function isForeignKetAlsoUniqueIndex($fk) : bool
+    {
+        $table = $fk->getLocalTable();
+        foreach ($table->getIndexes() as $index){
+            if ($index->isUnique() && count($index->getColumns()) === count($fk->getLocalColumns())){
+                $indexCols = $index->getColumns();
+                $fkCols = $fk->getColumns();
+                sort($indexCols);
+                sort($fkCols);
+                if ($indexCols == $fkCols){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }

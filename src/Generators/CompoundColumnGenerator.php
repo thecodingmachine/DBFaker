@@ -36,6 +36,7 @@ class CompoundColumnGenerator implements FakeDataGeneratorInterface
      * @throws \DBFaker\Exceptions\SchemaLogicException
      * @throws \DBFaker\Exceptions\UnsupportedDataTypeException
      * @throws \Doctrine\DBAL\Schema\SchemaException
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function __construct(Table $table, Index $index, SchemaHelper $schemaHelper, DBFaker $dbFaker, AbstractSchemaManager $schemaManager, DBFakerSchemaManager $fakerManagerHelper, int $valuesCount)
     {

@@ -41,6 +41,7 @@ class ForeignKeyColumnGenerator implements FakeDataGeneratorInterface
      * @param ForeignKeyConstraint $fk
      * @param DBFakerSchemaManager $schemaManager
      * @param SchemaHelper $schemaHelper
+     * @throws \DBFaker\Exceptions\SchemaLogicException
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
@@ -48,23 +49,20 @@ class ForeignKeyColumnGenerator implements FakeDataGeneratorInterface
     {
         $this->foreignColumn = $schemaManager->getForeignColumn($table, $column);
         $this->foreignPkRegistry = $foreignPkRegistry;
-        $this->generateUniqueValues = $schemaHelper->isExtendingKey($fk) && $table->getName() !== $fk->getForeignTableName();
+        $this->generateUniqueValues = $schemaHelper->isForeignKetAlsoUniqueIndex($fk);
     }
 
     /**
      * @return mixed
      * @throws \Doctrine\DBAL\DBALException
+     * @throws \Exception
      */
     public function __invoke()
     {
-        $randomPk = $this->foreignPkRegistry->loadValuesFromTable()->getRandomValue();
+        $randomPk = $this->foreignPkRegistry->loadValuesFromTable()->getRandomValue($this->alreadyGeneratedValues);
         $value = $randomPk[$this->foreignColumn->getName()];
         if ($this->generateUniqueValues){
-            while (\in_array($value, $this->alreadyGeneratedValues, true)){
-                $randomPk = $this->foreignPkRegistry->loadValuesFromTable()->getRandomValue();
-                $value = $randomPk[$this->foreignColumn->getName()];
-            }
-            $this->alreadyGeneratedValues[] = $value;
+            $this->alreadyGeneratedValues[] = $randomPk;
         }
         return $value;
     }

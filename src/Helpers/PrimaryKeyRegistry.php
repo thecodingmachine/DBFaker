@@ -105,12 +105,16 @@ class PrimaryKeyRegistry
     }
 
     /**
+     * @param $excludedValues
      * @return mixed[]
      * @throws \Exception
      */
-    public function getRandomValue() : array
+    public function getRandomValue($excludedValues) : array
     {
-        return $this->values[random_int(0, count($this->values) -1)];
+        $values = array_filter($this->values, function($value) use ($excludedValues){
+            return !\in_array($value, $excludedValues, true);
+        });
+        return $values[array_rand($values, 1)];
     }
 
     /**
