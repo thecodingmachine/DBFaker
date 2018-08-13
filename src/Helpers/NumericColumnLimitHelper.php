@@ -52,7 +52,7 @@ class NumericColumnLimitHelper
         $precisionValue = $this->getAbsValueByLengthPrecision($this->column);
         switch ($this->column->getType()->getName()){
             case Type::BIGINT:
-                return $this->column->getUnsigned() ? 0 : bcpow('2', '63');
+                return $this->column->getUnsigned() ? 0 : bcmul('-1', bcpow('2', '63'));
                 break;
             case Type::INTEGER:
                 return $this->column->getUnsigned() ? 0 : max(-1 * $precisionValue, bcmul('-1' , bcpow('2', '31')));
