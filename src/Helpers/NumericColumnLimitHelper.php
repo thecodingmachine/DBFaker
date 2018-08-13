@@ -78,11 +78,11 @@ class NumericColumnLimitHelper
         $precisionValue = $this->getAbsValueByLengthPrecision($this->column);
         switch ($this->column->getType()->getName()){
             case Type::BIGINT:
-                return $this->column->getUnsigned() ? bcpow('2', '64') : bcsub(bcpow('2', '63') , '1');
+                return $this->column->getUnsigned() ? bcsub(bcpow('2', '64'), 1) : bcsub(bcpow('2', '63') , '1');
             case Type::INTEGER:
-                return $this->column->getUnsigned() ? bcpow('2', '32') : min($precisionValue, bcsub( bcpow('2', '31') , '1'));
+                return $this->column->getUnsigned() ? bcsub(bcpow('2', '32'), 1) : min($precisionValue, bcsub( bcpow('2', '31') , '1'));
             case Type::SMALLINT:
-                return $this->column->getUnsigned() ? bcpow('2', '16') : bcsub( bcpow('2', '15') , '1');
+                return $this->column->getUnsigned() ? bcsub(bcpow('2', '16'), 1) : bcsub( bcpow('2', '15') , '1');
             case Type::DECIMAL:
                 return $this->column->getUnsigned() ? 0 : $precisionValue;
             case Type::FLOAT:
