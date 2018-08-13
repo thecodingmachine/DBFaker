@@ -64,7 +64,7 @@ class NumericColumnLimitHelper
                 return $this->column->getUnsigned() ? 0 : -1 * $precisionValue;
                 break;
             case Type::FLOAT:
-                return $this->column->getUnsigned() ? 0 : -1.79 * bcpow('10', '308');
+                return $this->column->getUnsigned() ? 0 : -8.95e307;
                 break;
         }
     }
@@ -86,7 +86,7 @@ class NumericColumnLimitHelper
             case Type::DECIMAL:
                 return $this->column->getUnsigned() ? 0 : $precisionValue;
             case Type::FLOAT:
-                return 1.79 * bcpow('10', '308');
+                return 8.95e307;
         }
     }
 
