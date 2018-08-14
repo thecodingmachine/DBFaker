@@ -10,19 +10,29 @@ env:
   - TASK_TESTS_COVERAGE=0
   - TASK_CS=1
   - TASK_SCA=0
-  matrix:
-#  - COMPOSER_FLAGS="--prefer-lowest"
-  - COMPOSER_FLAGS=""
+matrix:
+  include:
+  - php: 7.2
+    env: PREFER_LOWEST="" DB=mysql
+  - php: 7.1
+    env: PREFER_LOWEST="" DB=mysql COVERALLS=true
+  - php: 7.1
+    env: PREFER_LOWEST="--prefer-lowest" DB=mysql
+  - php: 7.1
+    env: PREFER_LOWEST="" DB=mariadb
+    addons:
+      mariadb: '10.0'
+
 cache:
   directories:
   - "$HOME/.composer/cache"
 before_install:
 - travis_retry composer global require $DEFAULT_COMPOSER_FLAGS hirak/prestissimo
 install:
-- travis_retry composer update $DEFAULT_COMPOSER_FLAGS $COMPOSER_FLAGS
+- travis_retry composer update $DEFAULT_COMPOSER_FLAGS $PREFER_LOWEST
 - composer info -D | sort
 script:
 - vendor/bin/phpunit --verbose;
 - composer phpstan
 after_success:
-- vendor/bin/coveralls -v
+- if [ "$COVERALLS" = "true" ] ; then ./vendor/bin/coveralls -v; fi
