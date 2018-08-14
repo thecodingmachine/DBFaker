@@ -34,5 +34,6 @@ install:
 script:
 - vendor/bin/phpunit --verbose;
 - composer phpstan
+- composer cs-check
 after_success:
 - if [ "$COVERALLS" = "true" ] ; then ./vendor/bin/coveralls -v; fi
