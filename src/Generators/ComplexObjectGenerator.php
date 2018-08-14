@@ -58,21 +58,21 @@ class ComplexObjectGenerator extends UniqueAbleGenerator
         $obj = new \stdClass();
         $nbProps = \random_int(2, 5);
         $hasGoneDeeper = false;
-        for ($i = 0; $i < $nbProps; $i++){
+        for ($i = 0; $i < $nbProps; $i++) {
             $propName = $this->randomPropName();
-            $goDeeper = $depth !== 0 && (\random_int(0,10) > 7 || !$hasGoneDeeper);
-            if ($goDeeper){
+            $goDeeper = $depth !== 0 && (\random_int(0, 10) > 7 || !$hasGoneDeeper);
+            if ($goDeeper) {
                 $hasGoneDeeper = true;
                 $value = $this->generateRandomObject($depth - 1);
-            }else{
+            } else {
                 $value = $this->randomValue();
             }
             $obj->$propName = $value;
         }
 
-        if ($this->toArray){
+        if ($this->toArray) {
             $obj = json_encode($obj, JSON_OBJECT_AS_ARRAY);
-            if (!$obj){
+            if (!$obj) {
                 throw new DBFakerException('Could not convert generated object to Json String');
             }
             $obj = json_decode($obj, true);
@@ -104,5 +104,4 @@ class ComplexObjectGenerator extends UniqueAbleGenerator
     {
         return str_replace('.', '', $this->generator->userName);
     }
-
 }

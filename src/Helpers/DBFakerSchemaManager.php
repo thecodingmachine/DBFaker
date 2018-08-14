@@ -8,7 +8,6 @@
 
 namespace DBFaker\Helpers;
 
-
 use DBFaker\Exceptions\SchemaLogicException;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
@@ -45,29 +44,28 @@ class DBFakerSchemaManager
      */
     public function getForeignColumn(Table $table, Column $column) : Column
     {
-        if (isset($this->foreignKeyMappings[$table->getName()][$column->getName()])){
+        if (isset($this->foreignKeyMappings[$table->getName()][$column->getName()])) {
             return $this->foreignKeyMappings[$table->getName()][$column->getName()]["column"];
         }
 
         $lookupColumn = null;
         $foreignKeys = $table->getForeignKeys();
-        foreach ($foreignKeys as $foreignKeyConstraint){
+        foreach ($foreignKeys as $foreignKeyConstraint) {
             $localColumns = $foreignKeyConstraint->getLocalColumns();
             $foreignColumns = $foreignKeyConstraint->getForeignColumns();
             $foreignTable = $this->schemaManager->listTableDetails($foreignKeyConstraint->getForeignTableName());
-            foreach ($localColumns as $index => $localColumn){
+            foreach ($localColumns as $index => $localColumn) {
                 $foreignColumn = $foreignColumns[$index];
                 $this->foreignKeyMappings[$table->getName()][$localColumn] = ["table" => $foreignTable, "column" => $foreignTable->getColumn($foreignColumn)];
-                if ($localColumn === $column->getName()){
+                if ($localColumn === $column->getName()) {
                     $lookupColumn = $foreignTable->getColumn($foreignColumn);
                 }
             }
         }
 
-        if (!$lookupColumn){
+        if (!$lookupColumn) {
             throw new SchemaLogicException("Could not find foreign column for local column '".$table->getName().".".$column->getName()."'");
         }
         return $lookupColumn;
     }
-
 }

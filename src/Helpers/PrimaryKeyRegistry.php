@@ -1,7 +1,6 @@
 <?php
 namespace DBFaker\Helpers;
 
-
 use DBFaker\Exceptions\PrimaryKeyColumnMismatchException;
 use DBFaker\Exceptions\SchemaLogicException;
 use Doctrine\DBAL\Connection;
@@ -49,15 +48,15 @@ class PrimaryKeyRegistry
         $this->connection = $connection;
         $refTable = null;
         $refCols = [];
-        foreach ($table->getForeignKeys() as $fk){
-            if ($helper->isExtendingKey($fk) && $table->getName() !== $fk->getForeignTableName()){
+        foreach ($table->getForeignKeys() as $fk) {
+            if ($helper->isExtendingKey($fk) && $table->getName() !== $fk->getForeignTableName()) {
                 $refTable = $fk->getForeignTableName();
                 $refCols = $fk->getForeignColumns();
             }
         }
-        if ($isSelfReferencing || !$refTable){
+        if ($isSelfReferencing || !$refTable) {
             $pk = $table->getPrimaryKey();
-            if ($pk === null){
+            if ($pk === null) {
                 throw new SchemaLogicException('No PK on table ' . $table->getName());
             }
             $refTable = $table->getName();
@@ -74,13 +73,13 @@ class PrimaryKeyRegistry
      */
     public function loadValuesFromTable() : PrimaryKeyRegistry
     {
-        if (!$this->valuesLoaded){
+        if (!$this->valuesLoaded) {
             $this->values = [];
             $colNames = implode(",", $this->columnNames);
             $rows = $this->connection->query("SELECT $colNames FROM " . $this->tableName)->fetchAll();
-            foreach ($rows as $row){
+            foreach ($rows as $row) {
                 $pk = [];
-                foreach ($this->columnNames as $column){
+                foreach ($this->columnNames as $column) {
                     $pk[$column] = $row[$column];
                 }
                 $this->values[] = $pk;
@@ -98,7 +97,7 @@ class PrimaryKeyRegistry
     {
         $keys = array_keys($value);
         sort($keys);
-        if ($this->columnNames != $keys){
+        if ($this->columnNames != $keys) {
             throw new PrimaryKeyColumnMismatchException('PrimaryKeys do not match between PKStore and addValue');
         }
         $this->values[] = $value;
@@ -111,7 +110,7 @@ class PrimaryKeyRegistry
      */
     public function getRandomValue(array $excludedValues) : array
     {
-        $values = array_filter($this->values, function($value) use ($excludedValues){
+        $values = array_filter($this->values, function ($value) use ($excludedValues) {
             return !\in_array($value, $excludedValues, true);
         });
         return $values[array_rand($values, 1)];
@@ -124,5 +123,4 @@ class PrimaryKeyRegistry
     {
         return $this->values;
     }
-
 }

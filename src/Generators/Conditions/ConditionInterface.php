@@ -12,5 +12,4 @@ interface ConditionInterface
      * @return bool : if the Generator will be applied
      */
     public function canApply(Table $table, Column $column) : bool;
-
 }

@@ -2,7 +2,6 @@
 
 namespace DBFaker\Generators;
 
-
 use DBFaker\DBFaker;
 use DBFaker\Exceptions\SchemaLogicException;
 use DBFaker\Helpers\DBFakerSchemaManager;
@@ -40,12 +39,12 @@ class CompoundColumnGenerator implements FakeDataGeneratorInterface
      */
     public function __construct(Table $table, Index $index, SchemaHelper $schemaHelper, DBFaker $dbFaker, AbstractSchemaManager $schemaManager, DBFakerSchemaManager $fakerManagerHelper, int $valuesCount)
     {
-        foreach ($index->getColumns() as  $columnName){
+        foreach ($index->getColumns() as $columnName) {
             //FK or normal column ?
             $column = $table->getColumn($columnName);
-            if ($schemaHelper->isColumnPartOfForeignKeyConstraint($table, $column)){
+            if ($schemaHelper->isColumnPartOfForeignKeyConstraint($table, $column)) {
                 $fkConstraint = $schemaHelper->getForeignKeyConstraintByLocal($table, $column);
-                if ($fkConstraint === null){
+                if ($fkConstraint === null) {
                     throw new SchemaLogicException($column->getName() . ' was detected as foreign key but could not get it');
                 }
                 $foreignTableName = $fkConstraint->getForeignTableName();
@@ -56,9 +55,9 @@ class CompoundColumnGenerator implements FakeDataGeneratorInterface
                 $this->possibleValues[$columnName] = array_map(function ($value) use ($foreignColumn) {
                     return $value[$foreignColumn->getName()];
                 }, $values);
-            }else{
+            } else {
                 $generator = $dbFaker->getSimpleColumnGenerator($table, $column);
-                for($i = 0; $i < $valuesCount; $i++) {
+                for ($i = 0; $i < $valuesCount; $i++) {
                     $this->possibleValues[$columnName][] = $generator();
                 }
             }
@@ -70,14 +69,13 @@ class CompoundColumnGenerator implements FakeDataGeneratorInterface
     public function __invoke() : array
     {
         $returnVal = [];
-        foreach ($this->possibleValues as $columnName => $values){
+        foreach ($this->possibleValues as $columnName => $values) {
             $returnVal[$columnName] = $values[array_rand($values)];
         }
-        if (!\in_array($returnVal, $this->generatedValues, true)){
+        if (!\in_array($returnVal, $this->generatedValues, true)) {
             $this->generatedValues[] = $returnVal;
             return $returnVal;
         }
         return $this();
     }
-
 }

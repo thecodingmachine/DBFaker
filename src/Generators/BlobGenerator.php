@@ -30,7 +30,7 @@ class BlobGenerator implements FakeDataGeneratorInterface
     public function __invoke()
     {
         $files = glob($this->globExpression, GLOB_MARK);
-        $files = array_filter($files, function ($fileName){
+        $files = array_filter($files, function ($fileName) {
             return strrpos($fileName, DIRECTORY_SEPARATOR) !== \strlen($fileName) - 1;
         });
         foreach ($files as $file) {
@@ -39,7 +39,7 @@ class BlobGenerator implements FakeDataGeneratorInterface
                 throw FileTooLargeException::create($file, $this->column);
             }
         }
-        if (\count($files) === 0){
+        if (\count($files) === 0) {
             throw new NoTestFilesFoundException("No files found for glob expression '".$this->globExpression."'");
         }
         $files = array_values($files);
@@ -49,6 +49,4 @@ class BlobGenerator implements FakeDataGeneratorInterface
 
         return fopen($chosenFile, 'rb');
     }
-
-
 }

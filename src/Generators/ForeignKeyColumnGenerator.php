@@ -2,7 +2,6 @@
 
 namespace DBFaker\Generators;
 
-
 use DBFaker\Helpers\DBFakerSchemaManager;
 use DBFaker\Helpers\PrimaryKeyRegistry;
 use DBFaker\Helpers\SchemaHelper;
@@ -45,7 +44,7 @@ class ForeignKeyColumnGenerator implements FakeDataGeneratorInterface
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    public function __construct(Table $table, Column $column, PrimaryKeyRegistry $foreignPkRegistry,  ForeignKeyConstraint $fk, DBFakerSchemaManager $schemaManager, SchemaHelper $schemaHelper)
+    public function __construct(Table $table, Column $column, PrimaryKeyRegistry $foreignPkRegistry, ForeignKeyConstraint $fk, DBFakerSchemaManager $schemaManager, SchemaHelper $schemaHelper)
     {
         $this->foreignColumn = $schemaManager->getForeignColumn($table, $column);
         $this->foreignPkRegistry = $foreignPkRegistry;
@@ -61,7 +60,7 @@ class ForeignKeyColumnGenerator implements FakeDataGeneratorInterface
     {
         $randomPk = $this->foreignPkRegistry->loadValuesFromTable()->getRandomValue($this->alreadyGeneratedValues);
         $value = $randomPk[$this->foreignColumn->getName()];
-        if ($this->generateUniqueValues){
+        if ($this->generateUniqueValues) {
             $this->alreadyGeneratedValues[] = $randomPk;
         }
         return $value;

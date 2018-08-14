@@ -1,7 +1,6 @@
 <?php
 namespace DBFaker\Exceptions;
 
-
 use Doctrine\DBAL\Schema\Column;
 
 class FileTooLargeException extends \OutOfRangeException
@@ -10,5 +9,4 @@ class FileTooLargeException extends \OutOfRangeException
     {
         return new self(sprintf('File %s is too large. File size: %d. Maximum column size: %d.', $path, \filesize($path), $column->getLength()));
     }
-
 }

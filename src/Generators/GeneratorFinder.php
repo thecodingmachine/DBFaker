@@ -38,20 +38,18 @@ class GeneratorFinder
     public function findGenerator(Table $table, Column $column, SchemaHelper $helper) : FakeDataGeneratorInterface
     {
         $generator = null;
-        if (!isset($this->generators[$table->getName() . '.' . $column->getName()])){
-            foreach ($this->generatorFactories as list($condition, $generatorFactory)){
+        if (!isset($this->generators[$table->getName() . '.' . $column->getName()])) {
+            foreach ($this->generatorFactories as list($condition, $generatorFactory)) {
                 /**  @var $condition ConditionInterface */
-                if ($condition->canApply($table, $column)){
+                if ($condition->canApply($table, $column)) {
                     $generator = $generatorFactory->create($table, $column, $helper);
                 }
             }
-            if (!$generator){
+            if (!$generator) {
                 throw new UnsupportedDataTypeException('Could not find suitable generator for column ' . $table->getName() . '.' . $column->getName() . ' of type : ' . $column->getType()->getName());
             }
             $this->generators[$table->getName() . '.' . $column->getName()] = $generator;
         }
         return $this->generators[$table->getName() . '.' . $column->getName()];
     }
-
-
 }

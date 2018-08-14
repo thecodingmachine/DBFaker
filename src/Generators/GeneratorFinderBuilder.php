@@ -1,7 +1,6 @@
 <?php
 namespace DBFaker\Generators;
 
-
 use DBFaker\Generators\Conditions\CheckTypeCondition;
 use DBFaker\Generators\Conditions\ConditionInterface;
 use Doctrine\DBAL\Types\Type;
@@ -86,5 +85,4 @@ class GeneratorFinderBuilder
     {
         return new GeneratorFinder($this->generators);
     }
-
 }

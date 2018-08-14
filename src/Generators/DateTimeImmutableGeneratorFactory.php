@@ -19,5 +19,4 @@ class DateTimeImmutableGeneratorFactory implements FakeDataGeneratorFactoryInter
         $unique = $schemaHelper->isColumnPartOfUniqueIndex($table, $column);
         return new DateTimeImmutableGenerator($unique);
     }
-
 }

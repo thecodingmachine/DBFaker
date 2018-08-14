@@ -74,8 +74,8 @@ class SchemaHelper
     public function getForeignKeyConstraintByLocal(Table $table, Column $column) : ?ForeignKeyConstraint
     {
         $table = $this->schema->getTable($table->getName());
-        foreach ($table->getForeignKeys() as $foreignKeyConstraint){
-            if (\in_array($column->getName(), $foreignKeyConstraint->getLocalColumns(), true)){
+        foreach ($table->getForeignKeys() as $foreignKeyConstraint) {
+            if (\in_array($column->getName(), $foreignKeyConstraint->getLocalColumns(), true)) {
                 return $foreignKeyConstraint;
             }
         }
@@ -108,18 +108,17 @@ class SchemaHelper
     public function isForeignKeyAlsoUniqueIndex(ForeignKeyConstraint $fk) : bool
     {
         $table = $fk->getLocalTable();
-        foreach ($table->getIndexes() as $index){
-            if ($index->isUnique() && count($index->getColumns()) === count($fk->getLocalColumns())){
+        foreach ($table->getIndexes() as $index) {
+            if ($index->isUnique() && count($index->getColumns()) === count($fk->getLocalColumns())) {
                 $indexCols = $index->getColumns();
                 $fkCols = $fk->getColumns();
                 sort($indexCols);
                 sort($fkCols);
-                if ($indexCols == $fkCols){
+                if ($indexCols == $fkCols) {
                     return true;
                 }
             }
         }
         return false;
     }
-
 }

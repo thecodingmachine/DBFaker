@@ -34,11 +34,10 @@ class NumericColumnLimitHelper
      */
     public function __construct(Column $column)
     {
-        if (!\in_array($column->getType()->getName(), self::$handledNumberTypes, true)){
+        if (!\in_array($column->getType()->getName(), self::$handledNumberTypes, true)) {
             throw new UnsupportedDataTypeException('Unsupported column type : ' .
                 $column->getType()->getName() . 'only ' .
-                implode("', '", self::$handledNumberTypes) . ' types are supported.'
-            );
+                implode("', '", self::$handledNumberTypes) . ' types are supported.');
         }
         $this->column = $column;
     }
@@ -50,15 +49,15 @@ class NumericColumnLimitHelper
     public function getMinNumericValue()
     {
         $precisionValue = $this->getAbsValueByLengthPrecision($this->column);
-        switch ($this->column->getType()->getName()){
+        switch ($this->column->getType()->getName()) {
             case Type::BIGINT:
                 return $this->column->getUnsigned() ? 0 : bcmul('-1', bcpow('2', '63'));
                 break;
             case Type::INTEGER:
-                return $this->column->getUnsigned() ? 0 : max(-1 * $precisionValue, bcmul('-1' , bcpow('2', '31')));
+                return $this->column->getUnsigned() ? 0 : max(-1 * $precisionValue, bcmul('-1', bcpow('2', '31')));
                 break;
             case Type::SMALLINT:
-                return $this->column->getUnsigned() ? 0 : bcmul('-1' , bcpow('2', '15'));
+                return $this->column->getUnsigned() ? 0 : bcmul('-1', bcpow('2', '15'));
                 break;
             case Type::DECIMAL:
                 return $this->column->getUnsigned() ? 0 : -1 * $precisionValue;
@@ -76,13 +75,13 @@ class NumericColumnLimitHelper
     public function getMaxNumericValue()
     {
         $precisionValue = $this->getAbsValueByLengthPrecision($this->column);
-        switch ($this->column->getType()->getName()){
+        switch ($this->column->getType()->getName()) {
             case Type::BIGINT:
-                return $this->column->getUnsigned() ? bcsub(bcpow('2', '64'), '1') : bcsub(bcpow('2', '63') , '1');
+                return $this->column->getUnsigned() ? bcsub(bcpow('2', '64'), '1') : bcsub(bcpow('2', '63'), '1');
             case Type::INTEGER:
-                return $this->column->getUnsigned() ? bcsub(bcpow('2', '32'), '1') : min($precisionValue, bcsub( bcpow('2', '31') , '1'));
+                return $this->column->getUnsigned() ? bcsub(bcpow('2', '32'), '1') : min($precisionValue, bcsub(bcpow('2', '31'), '1'));
             case Type::SMALLINT:
-                return $this->column->getUnsigned() ? bcsub(bcpow('2', '16'), '1') : bcsub( bcpow('2', '15') , '1');
+                return $this->column->getUnsigned() ? bcsub(bcpow('2', '16'), '1') : bcsub(bcpow('2', '15'), '1');
             case Type::DECIMAL:
                 return $this->column->getUnsigned() ? 0 : $precisionValue;
             case Type::FLOAT:
@@ -96,7 +95,7 @@ class NumericColumnLimitHelper
      */
     private function getAbsValueByLengthPrecision(Column $column)
     {
-        switch ($column->getType()->getName()){
+        switch ($column->getType()->getName()) {
             case Type::DECIMAL:
                 $str = str_repeat('9', $column->getScale());
                 return (double) substr_replace($str, '.', $column->getScale() - $column->getPrecision(), 0);
@@ -105,5 +104,4 @@ class NumericColumnLimitHelper
                 return (int) $str;
         }
     }
-
 }

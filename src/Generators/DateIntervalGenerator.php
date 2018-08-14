@@ -19,7 +19,7 @@ class DateIntervalGenerator implements FakeDataGeneratorInterface
     public function __construct(bool $generateUniqueValues = false)
     {
         $this->faker = Factory::create();
-        if ($generateUniqueValues){
+        if ($generateUniqueValues) {
             $this->faker->unique();
         }
     }
@@ -31,5 +31,4 @@ class DateIntervalGenerator implements FakeDataGeneratorInterface
     {
         return $this->faker->dateTime->diff($this->faker->dateTime);
     }
-
 }
