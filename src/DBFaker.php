@@ -363,9 +363,9 @@ class DBFaker
     }
 
     /**
-     * @param mixed[] $multipleUniqueContraints
+     * @param array<string, Index[]> $multipleUniqueContraints
      */
-    private function restoreMultipleUniqueContraints($multipleUniqueContraints): void
+    private function restoreMultipleUniqueContraints(array $multipleUniqueContraints): void
     {
         $this->log->info('Step 5 : restore multiple unique indexes keys');
         foreach ($multipleUniqueContraints as $tableName => $indexes){
@@ -380,11 +380,11 @@ class DBFaker
      * Sets data for a group of columns (2 or more) that are bound by a unique constraint
      * @param array<string, Index[]> $multipleUniqueContraints
      * @param string[] $handledFKColumns
-     * @return array
+     * @return string[]
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    private function updateMultipleUniqueIndexedColumns($multipleUniqueContraints, $handledFKColumns) : array
+    private function updateMultipleUniqueIndexedColumns(array $multipleUniqueContraints, array $handledFKColumns) : array
     {
 
         foreach ($multipleUniqueContraints as $tableName => $indexes){
@@ -424,7 +424,7 @@ class DBFaker
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    private function updateRemainingForeignKeys($foreignKeys, $handledFKColumns): void
+    private function updateRemainingForeignKeys(array $foreignKeys, array $handledFKColumns): void
     {
         foreach ($foreignKeys as $tableName => $fks){
             if (!array_key_exists($tableName, $this->fakeTableRowNumbers)){
@@ -538,7 +538,7 @@ class DBFaker
 
     /**
      * @param Table $table
-     * @param array $row
+     * @param mixed[] $row
      * @return mixed[]
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
