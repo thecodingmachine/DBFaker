@@ -6,7 +6,7 @@
     "psr-4": { "DBFaker\\": "src/" }
   },
   "require": {
-    "fzaninotto/faker": "^1.6",
+    "fzaninotto/faker": "^1.8",
     "doctrine/dbal": "^2.7",
     "symfony/console": "^3.3",
     "psr/log": "^1.0",
