@@ -105,11 +105,7 @@ class SchemaHelper
         return $fkColumnNames === $pkColumnNames;
     }
 
-    /**
-     * @param ForeignKeyConstraint $fk
-     * @return bool
-     */
-    public function isForeignKetAlsoUniqueIndex($fk) : bool
+    public function isForeignKeyAlsoUniqueIndex(ForeignKeyConstraint $fk) : bool
     {
         $table = $fk->getLocalTable();
         foreach ($table->getIndexes() as $index){

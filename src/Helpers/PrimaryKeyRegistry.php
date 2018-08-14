@@ -44,7 +44,7 @@ class PrimaryKeyRegistry
      * @param bool $isSelfReferencing
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function __construct(Connection $connection, Table $table, SchemaHelper $helper, $isSelfReferencing = false)
+    public function __construct(Connection $connection, Table $table, SchemaHelper $helper, bool $isSelfReferencing = false)
     {
         $this->connection = $connection;
         $refTable = null;
@@ -105,11 +105,11 @@ class PrimaryKeyRegistry
     }
 
     /**
-     * @param $excludedValues
+     * @param mixed[] $excludedValues
      * @return mixed[]
      * @throws \Exception
      */
-    public function getRandomValue($excludedValues) : array
+    public function getRandomValue(array $excludedValues) : array
     {
         $values = array_filter($this->values, function($value) use ($excludedValues){
             return !\in_array($value, $excludedValues, true);
