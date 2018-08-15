@@ -38,8 +38,9 @@ install:
 - travis_retry composer update $DEFAULT_COMPOSER_FLAGS $PREFER_LOWEST
 - composer info -D | sort
 script:
-- vendor/bin/phpunit --verbose;
+- vendor/bin/phpunit
 - composer phpstan
 - composer cs-check
+- vendor/bin/composer-require-checker check --config-file composer-require-checker.json
 after_success:
 - if [ "$COVERALLS" = "true" ] ; then ./vendor/bin/coveralls -v; fi
