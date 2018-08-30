@@ -39,7 +39,8 @@ class TextGenerator implements FakeDataGeneratorInterface
     public function __invoke() : string
     {
         $colLength = $this->column->getLength();
-        $maxLength = $colLength > 5 ? max($colLength, 300) : $colLength;
+        $maxLength = min($colLength, 300);
+
         return $colLength > 5 ? $this->faker->text($maxLength) : substr($this->faker->text(5), 0, $colLength - 1);
     }
 
