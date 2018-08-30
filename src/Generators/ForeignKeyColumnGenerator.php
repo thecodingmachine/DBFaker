@@ -49,7 +49,7 @@ class ForeignKeyColumnGenerator implements FakeDataGeneratorInterface
     {
         $this->foreignColumn = $schemaManager->getForeignColumn($table, $column);
         $this->foreignPkRegistry = $foreignPkRegistry;
-        $this->generateUniqueValues = $schemaHelper->isForeignKetAlsoUniqueIndex($fk);
+        $this->generateUniqueValues = $schemaHelper->isForeignKeyAlsoUniqueIndex($fk);
     }
 
     /**

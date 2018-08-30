@@ -183,11 +183,14 @@ class DBFaker
      * Inserts the data. This is done in 2 steps :
      *   - first insert data for all lines / columns. FKs will be assigned values that only match there type. This step allows to create PK values for second step.
      *   - second turn will update FKs to set random PK values from the previously generated lines.
-     * @param $data
+     * @param array[] $data
+     * @param ForeignKeyConstraint[] $extensionContraints
+     * @param array<string, Index[]> $multipleUniqueContraints
+     * @param array<string, ForeignKeyConstraint[]> $foreignKeys
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    private function insertFakeData($data, $extensionContraints, $multipleUniqueContraints, $foreignKeys) : void
+    private function insertFakeData(array $data, array $extensionContraints, array $multipleUniqueContraints, array $foreignKeys) : void
     {
         //1 - First insert data with no FKs, and null PKs. This will generate primary keys
         $this->log->info('Step 3.1 : Insert simple data ...');
@@ -210,11 +213,11 @@ class DBFaker
      * Inserts base data :
      *    - AutoIncrement PKs will be generated and stored
      *    - ForeignKey and Multiple Unique Indexes are ignored, because we need self-generated PK values
-     * @param mixed[] $data
+     * @param array[] $data
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    private function insertWithoutFksAndUniqueIndexes($data): void
+    private function insertWithoutFksAndUniqueIndexes(array $data): void
     {
         $plateform = $this->connection->getDatabasePlatform();
         foreach ($data as $tableName => $rows){
@@ -260,7 +263,7 @@ class DBFaker
      * @throws \Doctrine\DBAL\DBALException
      * @throws \DBFaker\Exceptions\SchemaLogicException
      */
-    public function getPkRegistry(Table $table, $isSelfReferencing = false) : PrimaryKeyRegistry
+    public function getPkRegistry(Table $table, bool $isSelfReferencing = false) : PrimaryKeyRegistry
     {
         $index = $table->getName().($isSelfReferencing ? 'dbfacker_self_referencing' :'');
         if (!isset($this->primaryKeyRegistries[$index])) {
@@ -360,9 +363,9 @@ class DBFaker
     }
 
     /**
-     * @param mixed[] $multipleUniqueContraints
+     * @param array<string, Index[]> $multipleUniqueContraints
      */
-    private function restoreMultipleUniqueContraints($multipleUniqueContraints): void
+    private function restoreMultipleUniqueContraints(array $multipleUniqueContraints): void
     {
         $this->log->info('Step 5 : restore multiple unique indexes keys');
         foreach ($multipleUniqueContraints as $tableName => $indexes){
@@ -375,13 +378,13 @@ class DBFaker
     /**
      *
      * Sets data for a group of columns (2 or more) that are bound by a unique constraint
-     * @param mixed[] $multipleUniqueContraints
+     * @param array<string, Index[]> $multipleUniqueContraints
      * @param string[] $handledFKColumns
-     * @return array
+     * @return string[]
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    private function updateMultipleUniqueIndexedColumns($multipleUniqueContraints, $handledFKColumns) : array
+    private function updateMultipleUniqueIndexedColumns(array $multipleUniqueContraints, array $handledFKColumns) : array
     {
 
         foreach ($multipleUniqueContraints as $tableName => $indexes){
@@ -415,13 +418,13 @@ class DBFaker
     }
 
     /**
-     * @param mixed[] $foreignKeys
+     * @param array<string, ForeignKeyConstraint[]> $foreignKeys
      * @param string[] $handledFKColumns
      * @throws \DBFaker\Exceptions\DBFakerException
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    private function updateRemainingForeignKeys($foreignKeys, $handledFKColumns): void
+    private function updateRemainingForeignKeys(array $foreignKeys, array $handledFKColumns): void
     {
         foreach ($foreignKeys as $tableName => $fks){
             if (!array_key_exists($tableName, $this->fakeTableRowNumbers)){
@@ -458,14 +461,14 @@ class DBFaker
     }
 
     /**
-     * @param mixed[] $extensionConstraints
+     * @param ForeignKeyConstraint[] $extensionConstraints
      * @return string[]
      * @throws \DBFaker\Exceptions\DBFakerException
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\DBAL\Schema\SchemaException
      * @throws \Exception
      */
-    private function updateExtensionContraints($extensionConstraints) : array
+    private function updateExtensionContraints(array $extensionConstraints) : array
     {
         $handledFKColumns = [];
         foreach ($extensionConstraints as $fk){
@@ -535,7 +538,7 @@ class DBFaker
 
     /**
      * @param Table $table
-     * @param array $row
+     * @param mixed[] $row
      * @return mixed[]
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
