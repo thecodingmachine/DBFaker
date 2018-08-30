@@ -29,6 +29,6 @@ class BlobGeneratorFactory implements FakeDataGeneratorFactoryInterface
      */
     public function create(Table $table, Column $column, SchemaHelper $helper): FakeDataGeneratorInterface
     {
-        return new BlobGenerator($this->globExpression);
+        return new BlobGenerator($this->globExpression, $column);
     }
 }

@@ -126,11 +126,11 @@ class DBFakerTest extends TestCase
 
         $generatorFinderBuilder->addGenerator(
             new CheckTypeCondition(Type::getType(Type::BLOB)),
-            new BlobGeneratorFactory(__DIR__ . "/fixtures/*")
+            new BlobGeneratorFactory(__DIR__ . "/fixtures/blob/*")
         );
         $generatorFinderBuilder->addGenerator(
             new CheckTypeCondition(Type::getType(Type::BINARY)),
-            new BlobGeneratorFactory(__DIR__ . "/fixtures/*")
+            new BlobGeneratorFactory(__DIR__ . "/fixtures/binary/*")
         );
 
         $faker = new \DBFaker\DBFaker($conn, $generatorFinderBuilder->buildFinder());
