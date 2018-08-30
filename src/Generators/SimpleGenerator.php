@@ -1,7 +1,6 @@
 <?php
 namespace DBFaker\Generators;
 
-
 use Faker\Factory;
 use Faker\Generator;
 
@@ -26,7 +25,7 @@ class SimpleGenerator implements FakeDataGeneratorInterface
     public function __construct(string $fakerProperty, bool $generateUniqueValues = false)
     {
         $this->faker = Factory::create();
-        if ($generateUniqueValues){
+        if ($generateUniqueValues) {
             $this->faker->unique();
         }
         $this->fakerProperty = $fakerProperty;
@@ -39,6 +38,4 @@ class SimpleGenerator implements FakeDataGeneratorInterface
     {
         return $this->faker->{$this->fakerProperty};
     }
-
-
 }

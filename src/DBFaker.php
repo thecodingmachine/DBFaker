@@ -162,12 +162,11 @@ class DBFaker
                 //IF column is a PK and Autoincrement then values will be set to null, let the database generate them
                 if ($this->schemaHelper->isPrimaryKeyColumn($table, $column) && $column->getAutoincrement()) {
                     $value = null;
-                }
-                //Other data will be Faked depending of column's type and attributes. FKs to, but their values wil be overridden.
-                else {
-                    if (!$column->getNotnull() && $this->nullProbabilityOccured()){
+                } else {
+                    //Other data will be Faked depending of column's type and attributes. FKs to, but their values wil be overridden.
+                    if (!$column->getNotnull() && $this->nullProbabilityOccured()) {
                         $value = null;
-                    }else{
+                    } else {
                         $generator = $this->getSimpleColumnGenerator($table, $column);
                         $value = $generator();
                     }
@@ -220,14 +219,14 @@ class DBFaker
     private function insertWithoutFksAndUniqueIndexes(array $data): void
     {
         $plateform = $this->connection->getDatabasePlatform();
-        foreach ($data as $tableName => $rows){
+        foreach ($data as $tableName => $rows) {
             $table = $this->schemaManager->listTableDetails($tableName);
 
             //initiate column types for insert : only get the first array to retrieve column names
             $types = [];
             $first = reset($rows);
-            if ($first){
-                foreach ($first as $columnName => $value){
+            if ($first) {
+                foreach ($first as $columnName => $value) {
                     /** @var Column $column */
                     $column = $table->getColumn($columnName);
                     $types[] = $column->getType()->getBindingType();
@@ -236,9 +235,9 @@ class DBFaker
 
             //insert faked data
             $cnt = count($rows);
-            foreach ($rows as $index => $row){
+            foreach ($rows as $index => $row) {
                 $dbRow = [];
-                foreach ($row as $columnName => $value){
+                foreach ($row as $columnName => $value) {
                     $column = $table->getColumn($columnName);
                     $newVal = $column->getType()->convertToDatabaseValue($value, $plateform);
                     $dbRow[$column->getQuotedName($this->connection->getDatabasePlatform())] = $newVal;
@@ -247,10 +246,10 @@ class DBFaker
                 $this->connection->insert($table->getName(), $dbRow, $types);
             }
             //if autoincrement, add the new ID to the PKRegistry
-            if ($table->hasPrimaryKey()){
+            if ($table->hasPrimaryKey()) {
                 $pkColumnName = $table->getPrimaryKeyColumns()[0];
                 $pkColumn = $table->getColumn($pkColumnName);
-                if ($pkColumn->getAutoincrement() && $this->schemaHelper->isPrimaryKeyColumn($table, $pkColumn)){
+                if ($pkColumn->getAutoincrement() && $this->schemaHelper->isPrimaryKeyColumn($table, $pkColumn)) {
                     $this->getPkRegistry($table)->addValue([$pkColumnName => $this->connection->lastInsertId()]);
                 }
             }
@@ -312,10 +311,10 @@ class DBFaker
         $this->log->info('Step 2.1 : Drop FKs ...');
         $foreignKeys = [];
         $tables = $this->schemaManager->listTables();
-        foreach ($tables as $table){
-            foreach ($table->getForeignKeys() as $fk){
+        foreach ($tables as $table) {
+            foreach ($table->getForeignKeys() as $fk) {
                 $foreignTable = $this->schemaManager->listTableDetails($fk->getForeignTableName());
-                foreach ($fk->getColumns() as $localColumnName){
+                foreach ($fk->getColumns() as $localColumnName) {
                     $localColumn = $table->getColumn($localColumnName);
                     $selfReferencing = $fk->getForeignTableName() === $table->getName();
                     $fkValueGenerator = new ForeignKeyColumnGenerator($table, $localColumn, $this->getPkRegistry($foreignTable, $selfReferencing), $fk, $this->fakerManagerHelper, $this->schemaHelper);
@@ -335,8 +334,8 @@ class DBFaker
     private function restoreForeignKeys($foreignKeys) : void
     {
         $this->log->info('Step 4 : restore foreign keys');
-        foreach ($foreignKeys as $tableName => $fks){
-            foreach ($fks as $fk){
+        foreach ($foreignKeys as $tableName => $fks) {
+            foreach ($fks as $fk) {
                 $this->schemaManager->createForeignKey($fk, $tableName);
             }
         }
@@ -351,9 +350,9 @@ class DBFaker
         $this->log->info('Step 2.2 : Drop Multiple indexes ...');
         $multipleUniqueContraints = [];
         $tables = $this->schemaManager->listTables();
-        foreach ($tables as $table){
-            foreach ($table->getIndexes() as $index){
-                if ($index->isUnique() && count($index->getColumns()) > 1){
+        foreach ($tables as $table) {
+            foreach ($table->getIndexes() as $index) {
+                if ($index->isUnique() && count($index->getColumns()) > 1) {
                     $multipleUniqueContraints[$table->getName()][] = $index;
                     $this->schemaManager->dropIndex($index->getQuotedName($this->connection->getDatabasePlatform()), $table->getName());
                 }
@@ -368,8 +367,8 @@ class DBFaker
     private function restoreMultipleUniqueContraints(array $multipleUniqueContraints): void
     {
         $this->log->info('Step 5 : restore multiple unique indexes keys');
-        foreach ($multipleUniqueContraints as $tableName => $indexes){
-            foreach ($indexes as $index){
+        foreach ($multipleUniqueContraints as $tableName => $indexes) {
+            foreach ($indexes as $index) {
                 $this->schemaManager->createIndex($index, $tableName);
             }
         }
@@ -387,13 +386,13 @@ class DBFaker
     private function updateMultipleUniqueIndexedColumns(array $multipleUniqueContraints, array $handledFKColumns) : array
     {
 
-        foreach ($multipleUniqueContraints as $tableName => $indexes){
+        foreach ($multipleUniqueContraints as $tableName => $indexes) {
             $table = $this->schemaManager->listTableDetails($tableName);
 
-            foreach ($indexes as $index){
-                foreach ($index->getColumns() as $columnName){
+            foreach ($indexes as $index) {
+                foreach ($index->getColumns() as $columnName) {
                     $fullColumnName = $tableName. '.' .$columnName;
-                    if (!\in_array($fullColumnName, $handledFKColumns, true)){
+                    if (!\in_array($fullColumnName, $handledFKColumns, true)) {
                         $handledFKColumns[] = $fullColumnName;
                     }
                 }
@@ -404,7 +403,7 @@ class DBFaker
             $i = 1;
             while ($row = $stmt->fetch()) {
                 $newValues = [];
-                foreach ($indexes as $index){
+                foreach ($indexes as $index) {
                     /** @var Index $index */
                     $compoundColumnGenerator = $this->getCompoundColumnGenerator($table, $index, $count);
                     $newValues = array_merge($newValues, $compoundColumnGenerator());
@@ -426,8 +425,8 @@ class DBFaker
      */
     private function updateRemainingForeignKeys(array $foreignKeys, array $handledFKColumns): void
     {
-        foreach ($foreignKeys as $tableName => $fks){
-            if (!array_key_exists($tableName, $this->fakeTableRowNumbers)){
+        foreach ($foreignKeys as $tableName => $fks) {
+            if (!array_key_exists($tableName, $this->fakeTableRowNumbers)) {
                 //only update tables where data has been inserted
                 continue;
             }
@@ -442,7 +441,7 @@ class DBFaker
                 foreach ($fks as $fk) {
                     $localColumns = $fk->getLocalColumns();
                     foreach ($localColumns as $index => $localColumn) {
-                        if (\in_array($tableName . '.' . $localColumn, $handledFKColumns)){
+                        if (\in_array($tableName . '.' . $localColumn, $handledFKColumns)) {
                             continue;
                         }
                         $column = $table->getColumn($localColumn);
@@ -451,8 +450,8 @@ class DBFaker
                     }
                 }
                 $row = $this->stripUnselectableColumns($table, $row);
-                if (count($newValues) && $this->connection->update($tableName, $newValues, $row) === 0){
-                    throw new DBFakerException("Row has not been updated $tableName - ". var_export($newValues,true) . ' - ' . var_export($row, true));
+                if (count($newValues) && $this->connection->update($tableName, $newValues, $row) === 0) {
+                    throw new DBFakerException("Row has not been updated $tableName - ". var_export($newValues, true) . ' - ' . var_export($row, true));
                 };
                 $this->log->info("Step 3.3 : updated $i of $count for $tableName");
                 $i++;
@@ -471,7 +470,7 @@ class DBFaker
     private function updateExtensionContraints(array $extensionConstraints) : array
     {
         $handledFKColumns = [];
-        foreach ($extensionConstraints as $fk){
+        foreach ($extensionConstraints as $fk) {
             $localTableName = $fk->getLocalTable()->getQuotedName($this->connection->getDatabasePlatform());
             $stmt = $this->connection->query('SELECT * FROM ' . $localTableName);
             $count = $this->connection->fetchColumn('SELECT count(*) FROM ' .$localTableName);
@@ -486,8 +485,8 @@ class DBFaker
                     $newValues[$localColumn] = $fkValueGenerator();
                 }
                 $row = $this->stripUnselectableColumns($fk->getLocalTable(), $row);
-                if ($this->connection->update($localTableName, $newValues, $row) === 0){
-                    throw new DBFakerException("Row has not been updated $localTableName - ". var_export($newValues,true) . ' - ' . var_export($row, true));
+                if ($this->connection->update($localTableName, $newValues, $row) === 0) {
+                    throw new DBFakerException("Row has not been updated $localTableName - ". var_export($newValues, true) . ' - ' . var_export($row, true));
                 };
                 $this->log->info("Updated $i of $count for $localTableName");
                 $i++;
@@ -506,7 +505,7 @@ class DBFaker
      */
     private function getCompoundColumnGenerator(Table $table, Index $index, int $count): CompoundColumnGenerator
     {
-        if (!isset($this->compoundColumnGenerators[$table->getName() . "." . $index->getName()])){
+        if (!isset($this->compoundColumnGenerators[$table->getName() . "." . $index->getName()])) {
             $compoundGenerator = new CompoundColumnGenerator($table, $index, $this->schemaHelper, $this, $this->schemaManager, $this->fakerManagerHelper, $count);
             $this->compoundColumnGenerators[$table->getName() . '.' . $index->getName()] = $compoundGenerator;
         }
@@ -544,10 +543,10 @@ class DBFaker
      */
     private function stripUnselectableColumns(Table $table, array $row) : array
     {
-        return array_filter($row, function(string $columnName) use ($table) {
+        return array_filter($row, function (string $columnName) use ($table) {
             return !\in_array($table->getColumn($columnName)->getType()->getName(), [
                 Type::BINARY, Type::JSON, Type::JSON_ARRAY, Type::SIMPLE_ARRAY, Type::TARRAY, Type::BLOB, Type::JSON, Type::OBJECT
-            ],true);
+            ], true);
         }, ARRAY_FILTER_USE_KEY);
     }
 
@@ -560,14 +559,13 @@ class DBFaker
         $this->log->info('Step 2.1 : store extension constraints ...');
         $extensionConstraints = [];
         $tables = $this->schemaManager->listTables();
-        foreach ($tables as $table){
-            foreach ($table->getForeignKeys() as $fk){
-                if ($this->schemaHelper->isExtendingKey($fk)){
+        foreach ($tables as $table) {
+            foreach ($table->getForeignKeys() as $fk) {
+                if ($this->schemaHelper->isExtendingKey($fk)) {
                     $extensionConstraints[] = $fk;
                 }
             }
         }
         return $extensionConstraints;
     }
-
 }

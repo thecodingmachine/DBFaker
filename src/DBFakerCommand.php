@@ -1,7 +1,6 @@
 <?php
 namespace DBFaker;
 
-
 use DBFaker\Generators\GeneratorFactory;
 use Doctrine\DBAL\Connection;
 use Mouf\Database\SchemaAnalyzer\SchemaAnalyzer;

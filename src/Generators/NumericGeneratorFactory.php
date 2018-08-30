@@ -26,8 +26,4 @@ class NumericGeneratorFactory implements FakeDataGeneratorFactoryInterface
 
         return new NumericGenerator($column, $min, $max, $unique);
     }
-
-
-
-
 }

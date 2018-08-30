@@ -1,7 +1,6 @@
 <?php
 namespace DBFaker\Generators;
 
-
 use DBFaker\Exceptions\UnsupportedDataTypeException;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Types\Type;
@@ -52,7 +51,7 @@ class NumericGenerator extends UniqueAbleGenerator
      */
     protected function generateRandomValue(Column $column)
     {
-        switch ($column->getType()->getName()){
+        switch ($column->getType()->getName()) {
             case Type::BIGINT:
                 return $this->bigRandomNumber();
             case Type::INTEGER:
@@ -71,9 +70,8 @@ class NumericGenerator extends UniqueAbleGenerator
      */
     private function bigRandomNumber() : string
     {
-        $difference   = bcadd(bcsub($this->max,$this->min),"1");
+        $difference   = bcadd(bcsub($this->max, $this->min), "1");
         $rand_percent = bcdiv((string) mt_rand(), (string) mt_getrandmax(), 8); // 0 - 1.0
         return bcadd($this->min, bcmul($difference, $rand_percent, 8), 0);
     }
-
 }

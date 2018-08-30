@@ -8,5 +8,4 @@ use Doctrine\DBAL\Schema\Table;
 interface FakeDataGeneratorFactoryInterface
 {
     public function create(Table $table, Column $column, SchemaHelper $helper): FakeDataGeneratorInterface;
-
 }

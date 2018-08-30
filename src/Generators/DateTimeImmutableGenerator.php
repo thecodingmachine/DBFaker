@@ -19,7 +19,7 @@ class DateTimeImmutableGenerator implements FakeDataGeneratorInterface
     public function __construct(bool $generateUniqueValues = false)
     {
         $this->faker = Factory::create();
-        if ($generateUniqueValues){
+        if ($generateUniqueValues) {
             $this->faker->unique();
         }
     }
@@ -31,5 +31,4 @@ class DateTimeImmutableGenerator implements FakeDataGeneratorInterface
     {
         return \DateTimeImmutable::createFromMutable($this->faker->dateTime);
     }
-
 }

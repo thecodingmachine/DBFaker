@@ -20,5 +20,4 @@ class DateIntervalGeneratorFactory implements FakeDataGeneratorFactoryInterface
         $unique = $schemaHelper->isColumnPartOfUniqueIndex($table, $column);
         return new DateIntervalGenerator($unique);
     }
-
 }
